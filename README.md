@@ -6,88 +6,88 @@ PromptCraft is a prompt-engineering practice game. Players are shown a reference
 - Frontend: React (Vite)
 - Backend: FastAPI (Python)
 - Scoring (planned): CLIP / embedding similarity
-- Image generation (planned): API-based (e.g., Leonardo)
+- Image generation (planned): API-based (for example Leonardo)
 
 ## Repo Structure
 - `frontend/` React UI
 - `backend/` FastAPI API
-- `docs/` architecture + decisions + runbook
-- `scripts/` Windows PowerShell helpers
-- `.github/` PR templates, issue templates, CI
 
----
-
-## 🚀 Local Development Setup (Windows)
+## Local Development (Docker)
 
 ### Requirements
-
-- Python 3.10+
-- Node.js 22 LTS (or >= 20.19.0)
+- Docker Desktop (or Docker Engine + Compose)
 - Git
+- Poetry (only needed for running backend tests locally outside Docker)
 
-Check versions:
-
-node -v
-python --version
-
-Node must be v22.x.x (or >= 20.19.0).
-
----
-
-## 1) Clone the Repository
-
+### 1) Clone the Repository
+```bash
 git clone https://github.com/moonandchip/PromptCraft.git
 cd PromptCraft
+```
 
----
+### 2) Optional Environment Variables
+Create a root `.env` file if you want to override defaults used by `docker compose`.
 
-## 2) Backend Setup (FastAPI)
+You can start from:
+```bash
+cp .env.example .env
+```
 
-cd backend
-python -m venv .venv
-Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-.\.venv\Scripts\Activate.ps1
-pip install -r requirements.txt
-cd ..
-
-Create backend/.env file with:
-
-DATABASE_URL=your_database_url_here
-LEONARDO_API_KEY=your_key_here
-
----
-
-## 3) Frontend Setup (React + Vite)
-
-cd frontend
-npm install
-cd ..
-
-Create frontend/.env file with:
-
+```env
 VITE_API_URL=http://localhost:8000
+LEONARDO_API_KEY=your_key_here
+```
 
----
+### 3) Build and Run
+From the project root:
 
-## 4) Run the Full Development Environment
+```bash
+docker compose up --build
+```
 
-From project root:
+### 4) Access Services
+- Frontend: `http://localhost:5173`
+- Backend health check: `http://127.0.0.1:8000/health`
 
-Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass
-.\scripts\dev.ps1
-
-Frontend:
-http://localhost:5173
-
-Backend health check:
-http://127.0.0.1:8000/health
-
-Expected response:
+Expected health response:
+```json
 {"status":"ok"}
+```
 
----
+### Useful Commands
+Stop containers:
+```bash
+docker compose down
+```
 
-Important:
-- Do not commit .env files
-- Always create feature branches
-- Do not push directly to main
+Rebuild after dependency changes:
+```bash
+docker compose up --build
+```
+
+## Run Tests Locally
+Frontend:
+```bash
+cd frontend
+npm ci
+npm run test
+```
+
+Backend:
+```bash
+cd backend
+poetry install --with dev
+poetry run pytest tests -q
+```
+
+## GitHub CI/CD
+Workflow file: `.github/workflows/ci-cd.yml`
+
+- CI:
+  - Runs backend tests on Python 3.12
+  - Runs frontend tests on Node 22
+  - Triggers on `push` and `pull_request`
+- CD:
+  - On push to `main`, builds and publishes Docker images to GHCR:
+    - `ghcr.io/<owner>/<repo>/backend:latest`
+    - `ghcr.io/<owner>/<repo>/frontend:latest`
