@@ -54,12 +54,40 @@ jobs:
         run: npm run test
         working-directory: frontend
 
+  auth-build:
+    name: Auth Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: auth/package-lock.json
+
+      - name: Install auth dependencies
+        run: npm ci
+        working-directory: auth
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+        working-directory: auth
+
+      - name: Build auth service
+        run: npm run build
+        working-directory: auth
+
   publish-images:
     name: Publish Docker Images
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs:
       - backend-tests
       - frontend-tests
+      - auth-build
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -103,3 +131,13 @@ jobs:
           tags: |
             ghcr.io/${{ env.REPO_LC }}/frontend:latest
             ghcr.io/${{ env.REPO_LC }}/frontend:${{ env.SHA_SHORT }}
+
+      - name: Build and push auth image
+        uses: docker/build-push-action@v6
+        with:
+          context: ./auth
+          file: ./auth/Dockerfile
+          push: true
+          tags: |
+            ghcr.io/${{ env.REPO_LC }}/auth:latest
+            ghcr.io/${{ env.REPO_LC }}/auth:${{ env.SHA_SHORT }}

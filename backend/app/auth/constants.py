@@ -1,0 +1,37 @@
+AUTH_SERVICE_URL_ENV_VAR = "AUTH_SERVICE_URL"
+DEFAULT_AUTH_SERVICE_URL = "http://localhost:3000"
+
+HEADER_CONTENT_TYPE = "Content-Type"
+HEADER_AUTHORIZATION = "Authorization"
+CONTENT_TYPE_JSON = "application/json"
+ENCODING_UTF8 = "utf-8"
+EMPTY_JSON_OBJECT = "{}"
+
+BEARER_SCHEME = "bearer"
+
+ROUTER_PREFIX = "/auth"
+ROUTER_TAG = "authentication"
+
+AUTH_API_REGISTER_PATH = "/api/register"
+AUTH_API_INTERNAL_LOGIN_PATH = "/api/internal/login"
+AUTH_API_INTERNAL_ME_PATH = "/api/internal/me"
+
+KEY_ERROR = "error"
+KEY_DETAIL = "detail"
+KEY_USER = "user"
+KEY_ID = "id"
+KEY_EMAIL = "email"
+KEY_NAME = "name"
+KEY_PASSWORD = "password"
+KEY_ACCESS_TOKEN = "access_token"
+KEY_TOKEN_TYPE = "token_type"
+
+ERR_INVALID_EMAIL_FORMAT = "invalid email format"
+ERR_INVALID_AUTH_SERVICE_RESPONSE = "invalid auth service response"
+ERR_AUTH_SERVICE_ERROR = "auth service error"
+ERR_AUTH_SERVICE_UNAVAILABLE = "auth service unavailable"
+ERR_INVALID_AUTH_TOKEN_RESPONSE = "invalid auth token response"
+ERR_INVALID_AUTH_REGISTER_RESPONSE = "invalid auth register response"
+ERR_INVALID_AUTH_ME_RESPONSE = "invalid auth me response"
+ERR_INVALID_USER_PAYLOAD_FROM_AUTH_SERVICE = "invalid user payload from auth service"
+ERR_MISSING_BEARER_TOKEN = "missing bearer token"
