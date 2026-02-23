@@ -1,0 +1,46 @@
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem 2rem;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  background-color: #4da6ff;
+}
+
+.leftContainer {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+}
+
+.logo a {
+  color: white;
+  text-decoration: none;
+  font-weight: 700;
+  font-size: 1.5rem;
+}
+
+.mainLinks {
+  display: flex;
+  gap: 1rem;
+}
+
+.rightContainer {
+  display: flex;
+  gap: 1rem;
+}
+
+.navLink {
+  color: white;
+  text-decoration: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  font-weight: 600;
+  font-size: 1.125rem;
+}
+
+.navLink:hover {
+  background-color: rgba(255, 255, 255, 0.25);
+  transform: scale(1.05);
+}
