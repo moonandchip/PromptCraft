@@ -195,8 +195,8 @@ export default function PracticePage() {
           <span className={styles.scoreLabel}>Similarity Score:</span>
           <span className={`${styles.scorePill} ${styles.scorePillActive}`}>
             {similarityScore === 0
-              ? "Coming soon (CLIP scoring not yet enabled)"
-              : `${(similarityScore * 100).toFixed(1)}%`}
+              ? "Scoring…"
+              : `${similarityScore.toFixed(1)} / 100`}
           </span>
         </div>
       )}
