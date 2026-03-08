@@ -44,3 +44,42 @@
   background-color: rgba(255, 255, 255, 0.25);
   transform: scale(1.05);
 }
+
+.userEmail {
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.15);
+  color: white;
+  font-weight: 600;
+  font-size: 1.125rem;
+  display: flex;
+  align-items: center;
+}
+
+.userEmail {
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.15);
+  color: white;
+  font-weight: 600;
+  font-size: 1.125rem;
+  display: flex;
+  align-items: center;
+}
+
+.logoutButton {
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  background-color: rgba(25, 87, 233, 0.8);
+  color: white;
+  font-weight: 600;
+  font-size: 1.125rem;
+  cursor: pointer;
+  border: none;
+  transition: all 0.2s ease;
+}
+
+.logoutButton:hover {
+  background-color: rgba(25, 87, 233, 1);
+  transform: scale(1.03);
+}
