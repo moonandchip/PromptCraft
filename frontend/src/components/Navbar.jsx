@@ -1,10 +1,18 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "./AuthContext";
 import styles from "./Navbar.module.css";
 
 export default function Navbar() {
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+
   return (
     <nav className={styles.navbar}>
-      {/* Left (Logo + main links) */}
       <div className={styles.leftContainer}>
         <div className={styles.logo}>
           <Link to="/">PromptCraft</Link>
@@ -22,14 +30,24 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Right (Auth links) */}
       <div className={styles.rightContainer}>
-        <Link to="/login" className={styles.navLink}>
-          Login
-        </Link>
-        <Link to="/register" className={styles.navLink}>
-          Register
-        </Link>
+        {user ? (
+          <>
+            <span className={styles.userEmail}>{user.email}</span>
+            <button className={styles.logoutButton} onClick={handleLogout}>
+              Logout
+            </button>
+          </>
+        ) : (
+          <>
+            <Link to="/login" className={styles.navLink}>
+              Login
+            </Link>
+            <Link to="/register" className={styles.navLink}>
+              Register
+            </Link>
+          </>
+        )}
       </div>
     </nav>
   );

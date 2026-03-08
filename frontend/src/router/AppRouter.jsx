@@ -8,6 +8,7 @@ import ProgressPage from "../pages/Progress/ProgressPage";
 import ChallengePage from "../pages/Challenge/ChallengePage";
 
 import MainLayout from "../layouts/MainLayout";
+import ProtectedRoute from "./ProtectedRoute";
 
 export default function AppRoutes() {
   return (
@@ -16,9 +17,12 @@ export default function AppRoutes() {
         <Route path="/" element={<HomePage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
-        <Route path="/practice" element={<PracticePage />} />
-        <Route path="/progress" element={<ProgressPage />} />
-        <Route path="/challenge" element={<ChallengePage />} />
+
+        <Route element={<ProtectedRoute />}>
+          <Route path="/practice" element={<PracticePage />} />
+          <Route path="/progress" element={<ProgressPage />} />
+          <Route path="/challenge" element={<ChallengePage />} />
+        </Route>
       </Route>
     </Routes>
   );
