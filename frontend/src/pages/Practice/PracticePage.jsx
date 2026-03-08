@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { getRounds, submitPrompt } from "../../api";
+import { getToken } from "../../auth";
 import styles from "./PracticePage.module.css";
 
 // Static image map – Vite resolves these at build time
@@ -79,10 +80,10 @@ export default function PracticePage() {
     setError(null);
 
     try {
-      const result = await submitPrompt({
-        round_id: selectedRound.id,
-        user_prompt: prompt.trim(),
-      });
+      const result = await submitPrompt(
+        { round_id: selectedRound.id, user_prompt: prompt.trim() },
+        getToken()
+      );
       setGeneratedImageUrl(result.generated_image_url);
       setSimilarityScore(result.similarity_score);
     } catch (err) {

@@ -2,12 +2,12 @@
 
 Layer responsibilities:
 - transport: FastAPI-facing endpoints.
-- service: business logic (Leonardo API image generation).
-- data: (reserved for DB access when a database is added).
+- service: business logic (Leonardo API image generation, CLIP scoring).
+- data: database access (persist prompts and attempts).
 
 Endpoints:
   GET  /round/rounds   – list all available practice rounds.
-  POST /round/submit   – submit a prompt and receive a generated image URL.
+  POST /round/submit   – submit a prompt, generate an image, persist it, and return it.
 """
 from .transport.router import router
 

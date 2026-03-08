@@ -29,12 +29,16 @@ export async function getRounds() {
 /**
  * Submit a prompt for a given round and receive a generated image URL.
  * @param {{ round_id: string, user_prompt: string }} payload
+ * @param {string} token  JWT access token
  * @returns {Promise<{ generated_image_url: string, similarity_score: number }>}
  */
-export async function submitPrompt({ round_id, user_prompt }) {
+export async function submitPrompt({ round_id, user_prompt }, token) {
   const response = await fetch(`${VITE_API_URL}/round/submit`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${token}`,
+    },
     body: JSON.stringify({ round_id, user_prompt }),
   });
   if (!response.ok) {

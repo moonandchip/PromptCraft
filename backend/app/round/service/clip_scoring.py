@@ -1,7 +1,7 @@
 """CLIP-based image similarity scoring.
 
 Compares a generated image against a reference image using OpenAI's
-CLIP model (ViT-B/32).  Returns a normalised 0–100 score where higher
+CLIP model.  Returns a normalised 0–100 score where higher
 means the two images are more visually similar.
 
 Flow:
@@ -25,9 +25,6 @@ from transformers import CLIPModel, CLIPProcessor  # type: ignore[import-untyped
 
 logger = logging.getLogger(__name__)
 
-# ---------------------------------------------------------------------------
-# Model singleton – loaded once, reused across requests
-# ---------------------------------------------------------------------------
 
 _model: CLIPModel | None = None
 _processor: CLIPProcessor | None = None
@@ -46,9 +43,7 @@ def _get_model_and_processor() -> tuple[CLIPModel, CLIPProcessor]:
     return _model, _processor
 
 
-# ---------------------------------------------------------------------------
 # Image helpers
-# ---------------------------------------------------------------------------
 
 def _load_image_from_url(url: str) -> Image.Image:
     """Download an image from *url* and return a PIL Image in RGB."""
@@ -63,9 +58,7 @@ def _load_image_from_path(path: str | Path) -> Image.Image:
     return Image.open(path).convert("RGB")
 
 
-# ---------------------------------------------------------------------------
 # Public API
-# ---------------------------------------------------------------------------
 
 def compute_similarity_score(
     reference_image_path: str | Path,
