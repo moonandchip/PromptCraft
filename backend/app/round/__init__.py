@@ -1,4 +1,4 @@
-"""Round module – handles practice round lifecycle and AI image generation.
+"""Round module that handles practice round lifecycle and AI image generation.
 
 Layer responsibilities:
 - transport: FastAPI-facing endpoints.
@@ -6,9 +6,10 @@ Layer responsibilities:
 - data: database access (persist prompts and attempts).
 
 Endpoints:
-  GET  /round/rounds   – list all available practice rounds.
-  POST /round/submit   – submit a prompt, generate an image, persist it, and return it.
+  GET  /round/rounds   - list all available practice rounds.
+  POST /round/submit   - submit a prompt, generate an image, persist it, and return it.
 """
+
 from .transport.router import router
 
 __all__ = ["router"]
