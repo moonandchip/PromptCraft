@@ -1,36 +1,76 @@
-import logging
 import os
-from contextlib import contextmanager
-from typing import Generator
-from urllib.parse import urlparse, urlencode, parse_qs, urlunparse
+from collections.abc import Generator
+from urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
-import psycopg2
-
-log = logging.getLogger(__name__)
-
-_DATABASE_URL_ENV = "DATABASE_URL"
+from sqlalchemy import create_engine
+from sqlalchemy.engine import Engine
+from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
 
-def _strip_schema_param(url: str) -> str:
-    """Remove the Prisma-only 'schema' query parameter psycopg2 rejects."""
-    parsed = urlparse(url)
-    params = {k: v for k, v in parse_qs(parsed.query).items() if k != "schema"}
-    clean_query = urlencode({k: v[0] for k, v in params.items()})
-    return urlunparse(parsed._replace(query=clean_query))
+class Base(DeclarativeBase):
+    """Shared SQLAlchemy declarative base for ORM models."""
+
+_engine: Engine | None = None
+_session_factory: sessionmaker[Session] | None = None
 
 
-@contextmanager
-def get_db_conn() -> Generator:
-    """Yield a psycopg2 connection; commit on exit, rollback on error."""
-    url = os.environ.get(_DATABASE_URL_ENV, "").strip()
-    if not url:
-        raise RuntimeError(f"{_DATABASE_URL_ENV} environment variable is not set")
-    conn = psycopg2.connect(_strip_schema_param(url))
+def _normalize_database_url(database_url: str) -> str:
+    if database_url.startswith("postgres://"):
+        return database_url.replace("postgres://", "postgresql+psycopg://", 1)
+    if database_url.startswith("postgresql://"):
+        return database_url.replace("postgresql://", "postgresql+psycopg://", 1)
+    return database_url
+
+
+def _strip_schema_query(database_url: str) -> tuple[str, str | None]:
+    parsed = urlparse(database_url)
+    params = parse_qs(parsed.query, keep_blank_values=True)
+    schema = params.pop("schema", [None])[0]
+    query = urlencode(params, doseq=True)
+    rebuilt = parsed._replace(query=query)
+    return urlunparse(rebuilt), schema
+
+
+def get_engine() -> Engine:
+    global _engine
+    if _engine is not None:
+        return _engine
+
+    raw_database_url = os.getenv("DATABASE_URL", "").strip()
+    if not raw_database_url:
+        raise RuntimeError("DATABASE_URL is not configured.")
+
+    normalized_url = _normalize_database_url(raw_database_url)
+    database_url, schema = _strip_schema_query(normalized_url)
+
+    engine_kwargs: dict[str, object] = {"pool_pre_ping": True}
+    if database_url.startswith("sqlite"):
+        engine_kwargs["connect_args"] = {"check_same_thread": False}
+    elif schema:
+        engine_kwargs["connect_args"] = {"options": f"-c search_path={schema}"}
+
+    _engine = create_engine(database_url, **engine_kwargs)
+    return _engine
+
+
+def get_session_factory() -> sessionmaker[Session]:
+    global _session_factory
+    if _session_factory is None:
+        _session_factory = sessionmaker(bind=get_engine(), autoflush=False, autocommit=False)
+    return _session_factory
+
+
+def get_db_session() -> Generator[Session, None, None]:
+    session = get_session_factory()()
     try:
-        yield conn
-        conn.commit()
-    except Exception:
-        conn.rollback()
-        raise
+        yield session
     finally:
-        conn.close()
+        session.close()
+
+
+def dispose_engine() -> None:
+    global _engine, _session_factory
+    if _engine is not None:
+        _engine.dispose()
+    _engine = None
+    _session_factory = None

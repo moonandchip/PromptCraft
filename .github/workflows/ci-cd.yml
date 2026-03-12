@@ -8,8 +8,33 @@ permissions:
   contents: read
 
 jobs:
+  changes:
+    name: Detect Changed Areas
+    runs-on: ubuntu-latest
+    outputs:
+      backend: ${{ steps.filter.outputs.backend }}
+      frontend: ${{ steps.filter.outputs.frontend }}
+      auth: ${{ steps.filter.outputs.auth }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Detect changed paths
+        id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            backend:
+              - 'backend/**'
+            frontend:
+              - 'frontend/**'
+            auth:
+              - 'auth/**'
+
   backend-tests:
     name: Backend Tests
+    needs: changes
+    if: needs.changes.outputs.backend == 'true'
     runs-on: ubuntu-latest
 
     steps:
@@ -33,6 +58,8 @@ jobs:
 
   frontend-tests:
     name: Frontend Tests
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true'
     runs-on: ubuntu-latest
 
     steps:
@@ -56,6 +83,8 @@ jobs:
 
   auth-build:
     name: Auth Build
+    needs: changes
+    if: needs.changes.outputs.auth == 'true'
     runs-on: ubuntu-latest
 
     steps:
@@ -83,8 +112,20 @@ jobs:
 
   publish-images:
     name: Publish Docker Images
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: |
+      always() &&
+      github.event_name == 'push' &&
+      github.ref == 'refs/heads/main' &&
+      (
+        needs.changes.outputs.backend == 'true' ||
+        needs.changes.outputs.frontend == 'true' ||
+        needs.changes.outputs.auth == 'true'
+      ) &&
+      (needs.backend-tests.result == 'success' || needs.backend-tests.result == 'skipped') &&
+      (needs.frontend-tests.result == 'success' || needs.frontend-tests.result == 'skipped') &&
+      (needs.auth-build.result == 'success' || needs.auth-build.result == 'skipped')
     needs:
+      - changes
       - backend-tests
       - frontend-tests
       - auth-build
@@ -113,6 +154,7 @@ jobs:
           echo "SHA_SHORT=${GITHUB_SHA::7}" >> "$GITHUB_ENV"
 
       - name: Build and push backend image
+        if: needs.changes.outputs.backend == 'true'
         uses: docker/build-push-action@v6
         with:
           context: ./backend
@@ -123,6 +165,7 @@ jobs:
             ghcr.io/${{ env.REPO_LC }}/backend:${{ env.SHA_SHORT }}
 
       - name: Build and push frontend image
+        if: needs.changes.outputs.frontend == 'true'
         uses: docker/build-push-action@v6
         with:
           context: ./frontend
@@ -133,6 +176,7 @@ jobs:
             ghcr.io/${{ env.REPO_LC }}/frontend:${{ env.SHA_SHORT }}
 
       - name: Build and push auth image
+        if: needs.changes.outputs.auth == 'true'
         uses: docker/build-push-action@v6
         with:
           context: ./auth

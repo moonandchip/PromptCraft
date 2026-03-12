@@ -1,4 +1,4 @@
-"""Tests for app.round.transport.submit endpoint functions."""
+"""Tests for round transport endpoint functions."""
 
 import unittest
 from unittest.mock import MagicMock, patch
@@ -6,164 +6,59 @@ from unittest.mock import MagicMock, patch
 from fastapi import HTTPException
 
 from app.auth.models import UserResponse
-from app.round.constants import ROUNDS
-from app.round.models import SubmitRequest
-from app.round.service.generate_image import GenerationError
-from app.round.transport.submit import get_rounds_endpoint, submit_endpoint
+from app.round.models import RoundInfo, SubmitRequest, SubmitResponse
+from app.round.service.errors import RoundServiceError
+from app.round.transport.get_rounds_endpoint import get_rounds_endpoint
+from app.round.transport.submit_endpoint import submit_endpoint
 
-
-_VALID_ROUND_ID = ROUNDS[0]["id"]
 _MOCK_USER = UserResponse(id="user-uuid-1234", email="test@example.com")
 
 
 class TestGetRoundsEndpoint(unittest.TestCase):
-    def test_returns_a_list(self):
+    @patch("app.round.transport.get_rounds_endpoint.get_rounds", autospec=True)
+    def test_get_rounds_endpoint_delegates_to_service(self, mock_get_rounds):
+        expected_rounds = [
+            RoundInfo(
+                id="golden-sunset",
+                title="Golden Sunset",
+                difficulty="easy",
+                reference_image="golden-sunset.jpeg",
+            )
+        ]
+        mock_get_rounds.return_value = expected_rounds
+
         result = get_rounds_endpoint()
-        self.assertIsInstance(result, list)
 
-    def test_returns_all_rounds(self):
-        result = get_rounds_endpoint()
-        self.assertEqual(len(result), len(ROUNDS))
-
-    def test_each_item_has_id(self):
-        for item in get_rounds_endpoint():
-            self.assertTrue(hasattr(item, "id"))
-
-    def test_each_item_has_title(self):
-        for item in get_rounds_endpoint():
-            self.assertTrue(hasattr(item, "title"))
-
-    def test_each_item_has_difficulty(self):
-        for item in get_rounds_endpoint():
-            self.assertTrue(hasattr(item, "difficulty"))
-
-    def test_each_item_has_reference_image(self):
-        for item in get_rounds_endpoint():
-            self.assertTrue(hasattr(item, "reference_image"))
-
-    def test_round_ids_match_constants(self):
-        result_ids = {item.id for item in get_rounds_endpoint()}
-        expected_ids = {r["id"] for r in ROUNDS}
-        self.assertEqual(result_ids, expected_ids)
+        self.assertEqual(result, expected_rounds)
+        mock_get_rounds.assert_called_once_with()
 
 
 class TestSubmitEndpoint(unittest.TestCase):
-    @patch("app.round.transport.submit._persist_submission")
-    @patch("app.round.transport.submit.compute_similarity_score")
-    @patch("app.round.transport.submit.generate_image")
-    def test_success_returns_image_url(self, mock_generate, mock_clip, mock_persist):
-        mock_generate.return_value = "https://example.com/generated.jpg"
-        mock_clip.return_value = 72.5
-        body = SubmitRequest(round_id=_VALID_ROUND_ID, user_prompt="a majestic scene")
+    @patch("app.round.transport.submit_endpoint.submit_round", autospec=True)
+    def test_submit_endpoint_returns_service_response(self, mock_submit_round):
+        expected = SubmitResponse(generated_image_url="https://example.com/generated.jpg", similarity_score=72.5)
+        mock_submit_round.return_value = expected
+        session = MagicMock()
+        body = SubmitRequest(round_id="ancient-temple", user_prompt="a majestic scene")
 
-        response = submit_endpoint(body, current_user=_MOCK_USER)
+        response = submit_endpoint(body=body, current_user=_MOCK_USER, session=session)
 
-        self.assertEqual(response.generated_image_url, "https://example.com/generated.jpg")
+        self.assertEqual(response, expected)
+        mock_submit_round.assert_called_once_with(
+            session=session,
+            user_email="test@example.com",
+            round_id="ancient-temple",
+            user_prompt="a majestic scene",
+        )
 
-    @patch("app.round.transport.submit._persist_submission")
-    @patch("app.round.transport.submit.compute_similarity_score")
-    @patch("app.round.transport.submit.generate_image")
-    def test_success_returns_similarity_score(self, mock_generate, mock_clip, mock_persist):
-        mock_generate.return_value = "https://example.com/generated.jpg"
-        mock_clip.return_value = 72.5
-        body = SubmitRequest(round_id=_VALID_ROUND_ID, user_prompt="a majestic scene")
-
-        response = submit_endpoint(body, current_user=_MOCK_USER)
-
-        self.assertEqual(response.similarity_score, 72.5)
-
-    def test_unknown_round_id_raises_404(self):
-        body = SubmitRequest(round_id="non-existent-round", user_prompt="some prompt")
+    @patch("app.round.transport.submit_endpoint.submit_round", autospec=True)
+    def test_submit_endpoint_maps_round_service_error_to_http_exception(self, mock_submit_round):
+        mock_submit_round.side_effect = RoundServiceError(status_code=404, detail="Round not found")
+        session = MagicMock()
+        body = SubmitRequest(round_id="missing-round", user_prompt="some prompt")
 
         with self.assertRaises(HTTPException) as ctx:
-            submit_endpoint(body, current_user=_MOCK_USER)
+            submit_endpoint(body=body, current_user=_MOCK_USER, session=session)
+
         self.assertEqual(ctx.exception.status_code, 404)
-
-    def test_unknown_round_id_error_detail(self):
-        from app.round.constants import ERR_ROUND_NOT_FOUND
-
-        body = SubmitRequest(round_id="non-existent-round", user_prompt="some prompt")
-
-        with self.assertRaises(HTTPException) as ctx:
-            submit_endpoint(body, current_user=_MOCK_USER)
-        self.assertEqual(ctx.exception.detail, ERR_ROUND_NOT_FOUND)
-
-    @patch("app.round.transport.submit.generate_image")
-    def test_generation_error_propagates_status_code(self, mock_generate):
-        mock_generate.side_effect = GenerationError(502, "Image generation failed")
-        body = SubmitRequest(round_id=_VALID_ROUND_ID, user_prompt="a prompt")
-
-        with self.assertRaises(HTTPException) as ctx:
-            submit_endpoint(body, current_user=_MOCK_USER)
-        self.assertEqual(ctx.exception.status_code, 502)
-
-    @patch("app.round.transport.submit.generate_image")
-    def test_generation_error_propagates_detail(self, mock_generate):
-        mock_generate.side_effect = GenerationError(502, "Image generation failed")
-        body = SubmitRequest(round_id=_VALID_ROUND_ID, user_prompt="a prompt")
-
-        with self.assertRaises(HTTPException) as ctx:
-            submit_endpoint(body, current_user=_MOCK_USER)
-        self.assertEqual(ctx.exception.detail, "Image generation failed")
-
-    @patch("app.round.transport.submit._persist_submission")
-    @patch("app.round.transport.submit.compute_similarity_score")
-    @patch("app.round.transport.submit.generate_image")
-    def test_clip_failure_returns_zero_score(self, mock_generate, mock_clip, mock_persist):
-        mock_generate.return_value = "https://example.com/generated.jpg"
-        mock_clip.side_effect = Exception("CLIP model unavailable")
-        body = SubmitRequest(round_id=_VALID_ROUND_ID, user_prompt="a scene")
-
-        response = submit_endpoint(body, current_user=_MOCK_USER)
-
-        self.assertEqual(response.similarity_score, 0.0)
-
-    @patch("app.round.transport.submit._persist_submission")
-    @patch("app.round.transport.submit.compute_similarity_score")
-    @patch("app.round.transport.submit.generate_image")
-    def test_clip_failure_still_returns_image_url(self, mock_generate, mock_clip, mock_persist):
-        mock_generate.return_value = "https://example.com/generated.jpg"
-        mock_clip.side_effect = Exception("CLIP model unavailable")
-        body = SubmitRequest(round_id=_VALID_ROUND_ID, user_prompt="a scene")
-
-        response = submit_endpoint(body, current_user=_MOCK_USER)
-
-        self.assertEqual(response.generated_image_url, "https://example.com/generated.jpg")
-
-    @patch("app.round.transport.submit._persist_submission")
-    @patch("app.round.transport.submit.compute_similarity_score")
-    @patch("app.round.transport.submit.generate_image")
-    def test_generate_image_called_with_user_prompt(self, mock_generate, mock_clip, mock_persist):
-        mock_generate.return_value = "https://example.com/img.jpg"
-        mock_clip.return_value = 50.0
-        body = SubmitRequest(round_id=_VALID_ROUND_ID, user_prompt="a unique test prompt")
-
-        submit_endpoint(body, current_user=_MOCK_USER)
-
-        mock_generate.assert_called_once_with("a unique test prompt")
-
-    @patch("app.round.transport.submit._persist_submission")
-    @patch("app.round.transport.submit.compute_similarity_score")
-    @patch("app.round.transport.submit.generate_image")
-    def test_persist_called_with_correct_user_id(self, mock_generate, mock_clip, mock_persist):
-        mock_generate.return_value = "https://example.com/img.jpg"
-        mock_clip.return_value = 50.0
-        body = SubmitRequest(round_id=_VALID_ROUND_ID, user_prompt="a prompt")
-
-        submit_endpoint(body, current_user=_MOCK_USER)
-
-        args, kwargs = mock_persist.call_args
-        self.assertEqual(kwargs.get("user_email") or args[0], _MOCK_USER.email)
-
-    @patch("app.round.transport.submit._persist_submission")
-    @patch("app.round.transport.submit.compute_similarity_score")
-    @patch("app.round.transport.submit.generate_image")
-    def test_db_failure_raises_500(self, mock_generate, mock_clip, mock_persist):
-        mock_generate.return_value = "https://example.com/img.jpg"
-        mock_clip.return_value = 50.0
-        mock_persist.side_effect = Exception("DB unavailable")
-        body = SubmitRequest(round_id=_VALID_ROUND_ID, user_prompt="a prompt")
-
-        with self.assertRaises(HTTPException) as ctx:
-            submit_endpoint(body, current_user=_MOCK_USER)
-        self.assertEqual(ctx.exception.status_code, 500)
+        self.assertEqual(ctx.exception.detail, "Round not found")
