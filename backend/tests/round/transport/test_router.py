@@ -12,6 +12,10 @@ class TestRoundTransportRouterModule(unittest.TestCase):
         route_paths = {route.path for route in router.routes}
         self.assertIn("/round/submit", route_paths)
 
+    def test_router_has_start_route(self):
+        route_paths = {route.path for route in router.routes}
+        self.assertIn("/round/start", route_paths)
+
     def test_rounds_route_is_get(self):
         for route in router.routes:
             if route.path == "/round/rounds":
@@ -21,5 +25,11 @@ class TestRoundTransportRouterModule(unittest.TestCase):
     def test_submit_route_is_post(self):
         for route in router.routes:
             if route.path == "/round/submit":
+                self.assertIn("POST", route.methods)
+                break
+
+    def test_start_route_is_post(self):
+        for route in router.routes:
+            if route.path == "/round/start":
                 self.assertIn("POST", route.methods)
                 break

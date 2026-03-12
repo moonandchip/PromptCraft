@@ -2,7 +2,7 @@ import unittest
 
 from pydantic import ValidationError
 
-from app.round.models import RoundInfo, SubmitRequest, SubmitResponse
+from app.round.models import RoundInfo, StartRoundResponse, SubmitRequest, SubmitResponse
 
 
 class TestSubmitRequest(unittest.TestCase):
@@ -78,3 +78,17 @@ class TestRoundInfo(unittest.TestCase):
     def test_round_info_missing_field_raises_validation_error(self):
         with self.assertRaises(ValidationError):
             RoundInfo(id="golden-sunset", title="Golden Sunset", difficulty="easy")
+
+
+class TestStartRoundResponse(unittest.TestCase):
+    def test_start_round_response_fields(self):
+        response = StartRoundResponse(
+            round_id="ancient-temple",
+            target_image_url="/static/ancient-temple.jpg",
+        )
+        self.assertEqual(response.round_id, "ancient-temple")
+        self.assertEqual(response.target_image_url, "/static/ancient-temple.jpg")
+
+    def test_start_round_response_missing_field_raises_validation_error(self):
+        with self.assertRaises(ValidationError):
+            StartRoundResponse(round_id="ancient-temple")

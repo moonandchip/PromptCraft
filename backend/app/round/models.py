@@ -11,6 +11,11 @@ class SubmitResponse(BaseModel):
     similarity_score: float = 0.0
 
 
+class StartRoundResponse(BaseModel):
+    round_id: str
+    target_image_url: str
+
+
 class RoundInfo(BaseModel):
     id: str
     title: str
