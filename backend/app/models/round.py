@@ -8,7 +8,7 @@ class Round(Base):
 
     id = Column(Integer, primary_key=True, index=True)
 
-    user_id = Column(String, ForeignKey("User.id"))
+    user_id = Column(String, ForeignKey("users.id"))
 
     target_image_url = Column(String, nullable=False)
 
