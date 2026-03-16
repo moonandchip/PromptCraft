@@ -3,6 +3,7 @@ from .errors import RoundServiceError
 from .get_round_by_id import get_round_by_id
 from .get_rounds import get_rounds
 from .generate_image import GenerationError, generate_image
+from .start_round import start_round
 from .submit_round import submit_round
 
 __all__ = [
@@ -12,5 +13,6 @@ __all__ = [
     "RoundServiceError",
     "get_round_by_id",
     "get_rounds",
+    "start_round",
     "submit_round",
 ]
