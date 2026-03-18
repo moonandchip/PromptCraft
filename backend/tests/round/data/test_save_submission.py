@@ -29,6 +29,8 @@ class TestSaveSubmission(unittest.TestCase):
             reference_image="golden-sunset.jpeg",
             difficulty="easy",
             prompt_text="a prompt",
+            round_id="golden-sunset",
+            generated_image_url="https://example.com/generated.jpg",
             similarity_score=50.0,
         )
 
@@ -49,6 +51,8 @@ class TestSaveSubmission(unittest.TestCase):
             user_id="u1",
             image_id="img1",
             prompt_id="p1",
+            round_id="golden-sunset",
+            generated_image_url="https://example.com/generated.jpg",
             similarity_score=50.0,
         )
         session.commit.assert_called_once_with()

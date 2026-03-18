@@ -12,6 +12,8 @@ def save_submission(
     reference_image: str,
     difficulty: str,
     prompt_text: str,
+    round_id: str,
+    generated_image_url: str,
     similarity_score: float,
 ) -> None:
     """Persists a complete round submission transaction.
@@ -22,6 +24,8 @@ def save_submission(
         reference_image: The reference image filename for the selected round.
         difficulty: The textual difficulty of the selected round.
         prompt_text: The user prompt text submitted for the round.
+        round_id: The static round identifier (e.g. "ancient-temple").
+        generated_image_url: The URL of the AI-generated image for this submission.
         similarity_score: The computed similarity score for the submission.
 
     Returns:
@@ -47,6 +51,8 @@ def save_submission(
         user_id=user_id,
         image_id=image_id,
         prompt_id=prompt_id,
+        round_id=round_id,
+        generated_image_url=generated_image_url,
         similarity_score=similarity_score,
     )
     session.commit()
