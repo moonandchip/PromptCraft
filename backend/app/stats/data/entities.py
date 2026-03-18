@@ -1,15 +1,16 @@
-from sqlalchemy import Float, String
-from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy import DateTime, ForeignKey, String
-from sqlalchemy.sql import func
-
-from datetime import datetime
+from datetime import datetime, timezone
 from uuid import uuid4
+
+from sqlalchemy import DateTime, ForeignKey, String
+from sqlalchemy.orm import Mapped, mapped_column
+from sqlalchemy.sql import func
 
 from app.db import Base
 
+
 def _utc_now() -> datetime:
     return datetime.now(timezone.utc)
+
 
 class Round(Base):
     __tablename__ = "rounds"
