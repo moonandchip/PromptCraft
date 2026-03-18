@@ -13,12 +13,12 @@ PromptCraft is a prompt-engineering practice game. Players are shown a reference
 - `backend/` FastAPI API
 - `auth/` Next.js + Auth.js authentication service
 
-## Recommended Auth Architecture
+## Auth Architecture
 - `auth.promptcraft.com`: Next.js + Auth.js service handles login, registration, and sessions.
 - `api.promptcraft.com`: FastAPI service accepts authenticated requests and proxies auth operations to `auth.promptcraft.com`.
-- Use the same Postgres database with separate schemas:
-  - Backend: `schema=public` via `DATABASE_URL`
-  - Auth: `schema=auth` via `AUTH_DATABASE_URL`
+- Use separate Postgres databases:
+  - Backend: `promptcraft_app` via `DATABASE_URL`
+  - Auth: `promptcraft_auth` via `AUTH_DATABASE_URL` (or `DATABASE_URL` in the auth service)
 
 ## Local Development (Docker)
 
@@ -33,7 +33,7 @@ git clone https://github.com/moonandchip/PromptCraft.git
 cd PromptCraft
 ```
 
-### 2) Optional Environment Variables
+### 2) Environment Variables
 Create a root `.env` file if you want to override defaults used by `docker compose`.
 
 You can start from:
@@ -46,7 +46,7 @@ VITE_API_URL=http://localhost:8000
 LEONARDO_API_KEY=your_key_here
 DATABASE_URL=postgresql://postgres:postgres@localhost:5432/promptcraft?schema=public
 AUTH_DATABASE_URL=postgresql://postgres:postgres@localhost:5432/promptcraft?schema=auth
-AUTH_SERVICE_URL=http://localhost:3000
+AUTH_SERVICE_URL=http://auth:3000
 AUTH_SECRET=replace-with-long-random-string
 AUTH_URL=http://localhost:3000
 AUTH_TRUST_HOST=true
