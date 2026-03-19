@@ -17,6 +17,8 @@ class TestSaveAttempt(unittest.TestCase):
             user_id="u1",
             image_id="img1",
             prompt_id="p1",
+            round_id="ancient-temple",
+            generated_image_url="https://example.com/generated.jpg",
             similarity_score=50.0,
         )
 
@@ -24,3 +26,22 @@ class TestSaveAttempt(unittest.TestCase):
         session.add.assert_called_once()
         session.flush.assert_called_once_with()
         mock_get_next_attempt_number.assert_called_once_with(session=session, user_id="u1", image_id="img1")
+
+    @patch("app.round.data.save_attempt.get_next_attempt_number", autospec=True)
+    def test_attempt_stores_round_id_and_generated_image_url(self, mock_get_next_attempt_number):
+        session = create_autospec(Session, instance=True, spec_set=True)
+        mock_get_next_attempt_number.return_value = 1
+
+        save_attempt(
+            session=session,
+            user_id="u1",
+            image_id="img1",
+            prompt_id="p1",
+            round_id="golden-sunset",
+            generated_image_url="https://example.com/output.png",
+            similarity_score=75.0,
+        )
+
+        added_attempt = session.add.call_args[0][0]
+        self.assertEqual(added_attempt.round_id, "golden-sunset")
+        self.assertEqual(added_attempt.generated_image_url, "https://example.com/output.png")

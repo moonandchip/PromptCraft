@@ -56,6 +56,8 @@ def submit_round(session: Session, user_email: str, round_id: str, user_prompt: 
             reference_image=matched_round["reference_image"],
             difficulty=matched_round["difficulty"],
             prompt_text=user_prompt,
+            round_id=round_id,
+            generated_image_url=image_url,
             similarity_score=similarity_score,
         )
     except Exception as exc:

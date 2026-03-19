@@ -36,7 +36,16 @@ class TestSubmitRound(unittest.TestCase):
 
         self.assertEqual(response.generated_image_url, "https://example.com/generated.jpg")
         self.assertEqual(response.similarity_score, 72.5)
-        mock_save_submission.assert_called_once()
+        mock_save_submission.assert_called_once_with(
+            session=session,
+            user_email="test@example.com",
+            reference_image="ancient-temple.jpg",
+            difficulty="medium",
+            prompt_text="a majestic scene",
+            round_id="ancient-temple",
+            generated_image_url="https://example.com/generated.jpg",
+            similarity_score=72.5,
+        )
 
     @patch("app.round.service.submit_round.get_round_by_id", autospec=True)
     def test_submit_round_raises_not_found_error(self, mock_get_round_by_id):
@@ -103,6 +112,8 @@ class TestSubmitRound(unittest.TestCase):
         self.assertEqual(response.similarity_score, 0.0)
         kwargs = mock_save_submission.call_args.kwargs
         self.assertEqual(kwargs["similarity_score"], 0.0)
+        self.assertEqual(kwargs["round_id"], "ancient-temple")
+        self.assertEqual(kwargs["generated_image_url"], "https://example.com/generated.jpg")
 
     @patch("app.round.service.submit_round.save_submission", autospec=True)
     @patch("app.round.service.submit_round.compute_similarity_score", autospec=True)

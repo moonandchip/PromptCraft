@@ -49,6 +49,8 @@ class Attempt(Base):
     user_id: Mapped[str] = mapped_column(String, nullable=False, index=True)
     image_id: Mapped[str] = mapped_column(String, nullable=False, index=True)
     prompt_id: Mapped[str] = mapped_column(String, nullable=False, index=True)
+    round_id: Mapped[str] = mapped_column(String, nullable=False, index=True)
+    generated_image_url: Mapped[str] = mapped_column(String, nullable=False, default="")
     similarity_score: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
     time_taken: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
     attempt_number: Mapped[int] = mapped_column(Integer, nullable=False)
