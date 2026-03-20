@@ -25,7 +25,11 @@ class TestSaveAttempt(unittest.TestCase):
         self.assertIsInstance(attempt_id, str)
         session.add.assert_called_once()
         session.flush.assert_called_once_with()
-        mock_get_next_attempt_number.assert_called_once_with(session=session, user_id="u1", image_id="img1")
+        mock_get_next_attempt_number.assert_called_once_with(
+            session=session,
+            user_id="u1",
+            round_id="ancient-temple",
+        )
 
     @patch("app.round.data.save_attempt.get_next_attempt_number", autospec=True)
     def test_attempt_stores_round_id_and_generated_image_url(self, mock_get_next_attempt_number):
@@ -45,3 +49,4 @@ class TestSaveAttempt(unittest.TestCase):
         added_attempt = session.add.call_args[0][0]
         self.assertEqual(added_attempt.round_id, "golden-sunset")
         self.assertEqual(added_attempt.generated_image_url, "https://example.com/output.png")
+        self.assertEqual(added_attempt.attempt_number, 1)

@@ -7,6 +7,7 @@ Layer responsibilities:
 
 Endpoints:
   GET  /round/rounds   - list all available practice rounds.
+  GET  /round/{id}/attempts - list user attempts for a specific round.
   POST /round/start    - start a round for an authenticated user.
   POST /round/submit   - submit a prompt, generate an image, persist it, and return it.
 """
