@@ -1,7 +1,7 @@
 from fastapi import APIRouter, status
 
 from ..constants import ROUTER_PREFIX, ROUTER_TAG
-from ..models import AttemptInfo, RoundInfo, StartRoundResponse, SubmitRequest, SubmitResponse
+from ..models import AttemptInfo, RoundInfo, StartRoundResponse, SubmitResponse
 from .get_round_attempts_endpoint import get_round_attempts_endpoint
 from .get_rounds_endpoint import get_rounds_endpoint
 from .start_endpoint import start_endpoint
