@@ -16,7 +16,7 @@ GENERATION_MODEL_ID = "gemini-2.5-flash-image"
 POLL_INTERVAL_SECONDS = 3.0
 POLL_MAX_ATTEMPTS = 20
 
-# Static round definitions 
+# Static round definitions
 ROUNDS: list[dict] = [
     {
         "id": "ancient-temple",

@@ -10,6 +10,7 @@ from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 class Base(DeclarativeBase):
     """Shared SQLAlchemy declarative base for ORM models."""
 
+
 _engine: Engine | None = None
 _session_factory: sessionmaker[Session] | None = None
 

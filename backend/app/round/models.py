@@ -21,3 +21,10 @@ class RoundInfo(BaseModel):
     title: str
     difficulty: str
     reference_image: str
+
+
+class AttemptInfo(BaseModel):
+    attempt_number: int = Field(ge=1)
+    prompt: str
+    generated_image_url: str
+    similarity_score: float = 0.0

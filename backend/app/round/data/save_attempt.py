@@ -41,7 +41,7 @@ def save_attempt(
         generated_image_url=generated_image_url,
         similarity_score=similarity_score,
         time_taken=0,
-        attempt_number=get_next_attempt_number(session=session, user_id=user_id, image_id=image_id),
+        attempt_number=get_next_attempt_number(session=session, user_id=user_id, round_id=round_id),
     )
     session.add(attempt)
     session.flush()

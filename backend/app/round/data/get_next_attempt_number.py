@@ -4,21 +4,24 @@ from sqlalchemy.orm import Session
 from .entities import Attempt
 
 
-def get_next_attempt_number(session: Session, user_id: str, image_id: str) -> int:
-    """Calculates the next attempt number for a user/image pair.
+def get_next_attempt_number(session: Session, user_id: str, round_id: str) -> int:
+    """Calculates the next attempt number for a user/round pair.
 
     Args:
         session: The SQLAlchemy session used for data access.
         user_id: The ID of the user attempting the round.
-        image_id: The ID of the reference image for the round.
+        round_id: The round ID for the attempt.
 
     Returns:
-        The next 1-based attempt number for this user/image pair.
+        The next 1-based attempt number for this user/round pair.
 
     Raises:
         Exception: Propagates database errors raised by the session.
     """
-    existing_attempts = session.execute(
-        select(func.count(Attempt.id)).where(Attempt.user_id == user_id, Attempt.image_id == image_id)
+    max_attempt_number = session.execute(
+        select(func.max(Attempt.attempt_number)).where(
+            Attempt.user_id == user_id,
+            Attempt.round_id == round_id,
+        )
     ).scalar_one()
-    return int(existing_attempts) + 1
+    return int(max_attempt_number or 0) + 1

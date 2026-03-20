@@ -1,1 +1,2 @@
 
+"""PromptCraft backend application package."""

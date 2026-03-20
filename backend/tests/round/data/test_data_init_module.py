@@ -1,6 +1,7 @@
 import unittest
 
 from app.round.data import (
+    get_attempts_by_round_id,
     get_next_attempt_number,
     get_or_create_image,
     get_or_create_user,
@@ -9,6 +10,7 @@ from app.round.data import (
     save_round_start,
     save_submission,
 )
+from app.round.data.get_attempts_by_round_id import get_attempts_by_round_id as get_attempts_by_round_id_impl
 from app.round.data.get_next_attempt_number import get_next_attempt_number as get_next_attempt_number_impl
 from app.round.data.get_or_create_image import get_or_create_image as get_or_create_image_impl
 from app.round.data.get_or_create_user import get_or_create_user as get_or_create_user_impl
@@ -19,6 +21,9 @@ from app.round.data.save_submission import save_submission as save_submission_im
 
 
 class TestRoundDataInitModule(unittest.TestCase):
+    def test_data_init_re_exports_get_attempts_by_round_id(self):
+        self.assertIs(get_attempts_by_round_id, get_attempts_by_round_id_impl)
+
     def test_data_init_re_exports_get_or_create_user(self):
         self.assertIs(get_or_create_user, get_or_create_user_impl)
 

@@ -2,7 +2,7 @@ import unittest
 
 from pydantic import ValidationError
 
-from app.round.models import RoundInfo, StartRoundResponse, SubmitRequest, SubmitResponse
+from app.round.models import AttemptInfo, RoundInfo, StartRoundResponse, SubmitRequest, SubmitResponse
 
 
 class TestSubmitRequest(unittest.TestCase):
@@ -92,3 +92,27 @@ class TestStartRoundResponse(unittest.TestCase):
     def test_start_round_response_missing_field_raises_validation_error(self):
         with self.assertRaises(ValidationError):
             StartRoundResponse(round_id="ancient-temple")
+
+
+class TestAttemptInfo(unittest.TestCase):
+    def test_attempt_info_fields(self):
+        attempt = AttemptInfo(
+            attempt_number=2,
+            prompt="A vivid sunset over mountains",
+            generated_image_url="https://example.com/generated.png",
+            similarity_score=88.5,
+        )
+
+        self.assertEqual(attempt.attempt_number, 2)
+        self.assertEqual(attempt.prompt, "A vivid sunset over mountains")
+        self.assertEqual(attempt.generated_image_url, "https://example.com/generated.png")
+        self.assertEqual(attempt.similarity_score, 88.5)
+
+    def test_attempt_number_must_be_positive(self):
+        with self.assertRaises(ValidationError):
+            AttemptInfo(
+                attempt_number=0,
+                prompt="prompt",
+                generated_image_url="https://example.com/generated.png",
+                similarity_score=10.0,
+            )

@@ -27,9 +27,11 @@ app.include_router(auth_router)
 app.include_router(stats_router)
 app.include_router(round_router)
 
+
 @app.on_event("shutdown")
 def on_shutdown() -> None:
     dispose_engine()
+
 
 @app.get("/health")
 def health():
