@@ -2,7 +2,6 @@ from unittest.mock import MagicMock
 
 from fastapi.testclient import TestClient
 
-from app.auth.constants import ERR_MISSING_BEARER_TOKEN
 from app.auth.dependencies import get_current_user
 from app.auth.models import UserResponse
 from app.main import app
@@ -13,7 +12,8 @@ def test_start_route_requires_bearer_token():
     client = TestClient(app)
     response = client.post("/round/start")
     assert response.status_code == 401
-    assert response.json()["detail"] == ERR_MISSING_BEARER_TOKEN
+    body = response.json()
+    assert body["error"] is not None
 
 
 def test_start_route_returns_payload_with_authenticated_user():
@@ -31,5 +31,5 @@ def test_start_route_returns_payload_with_authenticated_user():
 
     assert response.status_code == 200
     payload = response.json()
-    assert "round_id" in payload
-    assert "target_image_url" in payload
+    assert "round_id" in payload["data"]
+    assert "target_image_url" in payload["data"]

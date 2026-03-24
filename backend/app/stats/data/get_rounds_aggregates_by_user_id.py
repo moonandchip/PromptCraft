@@ -28,8 +28,3 @@ def get_rounds_aggregates_by_user_id(session: Session, user_id: str) -> tuple[in
     )
     row = session.execute(query).one()
     return int(row.rounds_played or 0), float(row.average_score or 0.0), float(row.best_score or 0.0)
-
-from .entities import Round
-from .get_rounds_aggregates_by_user_id import get_rounds_aggregates_by_user_id
-
-__all__ = ["Round", "get_rounds_aggregates_by_user_id"]

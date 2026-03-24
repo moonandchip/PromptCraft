@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import MagicMock, patch
 
-from app.round.service.errors import RoundServiceError
+from app.round.exceptions import RoundError, SubmitRoundException
 from app.round.service.generate_image import GenerationError
 from app.round.service.submit_round import submit_round
 
@@ -51,7 +51,7 @@ class TestSubmitRound(unittest.TestCase):
     def test_submit_round_raises_not_found_error(self, mock_get_round_by_id):
         mock_get_round_by_id.return_value = None
 
-        with self.assertRaises(RoundServiceError) as ctx:
+        with self.assertRaises(SubmitRoundException) as ctx:
             submit_round(
                 session=MagicMock(),
                 user_email="test@example.com",
@@ -71,7 +71,7 @@ class TestSubmitRound(unittest.TestCase):
         }
         mock_generate_image.side_effect = GenerationError(502, "Image generation failed")
 
-        with self.assertRaises(RoundServiceError) as ctx:
+        with self.assertRaises(SubmitRoundException) as ctx:
             submit_round(
                 session=MagicMock(),
                 user_email="test@example.com",
@@ -80,7 +80,7 @@ class TestSubmitRound(unittest.TestCase):
             )
 
         self.assertEqual(ctx.exception.status_code, 502)
-        self.assertEqual(ctx.exception.detail, "Image generation failed")
+        self.assertEqual(ctx.exception.message, "Image generation failed")
 
     @patch("app.round.service.submit_round.save_submission", autospec=True)
     @patch("app.round.service.submit_round.compute_similarity_score", autospec=True)
@@ -135,7 +135,7 @@ class TestSubmitRound(unittest.TestCase):
         mock_compute_similarity_score.return_value = 50.0
         mock_save_submission.side_effect = Exception("DB unavailable")
 
-        with self.assertRaises(RoundServiceError) as ctx:
+        with self.assertRaises(SubmitRoundException) as ctx:
             submit_round(
                 session=MagicMock(),
                 user_email="test@example.com",
@@ -144,4 +144,4 @@ class TestSubmitRound(unittest.TestCase):
             )
 
         self.assertEqual(ctx.exception.status_code, 500)
-        self.assertEqual(ctx.exception.detail, "Failed to save submission")
+        self.assertEqual(ctx.exception.message, "Failed to save submission")

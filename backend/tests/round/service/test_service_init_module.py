@@ -2,7 +2,6 @@ import unittest
 
 from app.round.service import (
     GenerationError,
-    RoundServiceError,
     compute_similarity_score,
     generate_image,
     get_round_by_id,
@@ -12,7 +11,6 @@ from app.round.service import (
     submit_round,
 )
 from app.round.service.clip_scoring import compute_similarity_score as compute_similarity_score_impl
-from app.round.service.errors import RoundServiceError as RoundServiceErrorImpl
 from app.round.service.get_round_by_id import get_round_by_id as get_round_by_id_impl
 from app.round.service.get_round_attempts import get_round_attempts as get_round_attempts_impl
 from app.round.service.get_rounds import get_rounds as get_rounds_impl
@@ -31,9 +29,6 @@ class TestRoundServiceInitModule(unittest.TestCase):
 
     def test_service_init_re_exports_generation_error(self):
         self.assertIs(GenerationError, GenerationErrorImpl)
-
-    def test_service_init_re_exports_round_service_error(self):
-        self.assertIs(RoundServiceError, RoundServiceErrorImpl)
 
     def test_service_init_re_exports_get_round_by_id(self):
         self.assertIs(get_round_by_id, get_round_by_id_impl)

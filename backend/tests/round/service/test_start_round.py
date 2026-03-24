@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import MagicMock, patch
 
-from app.round.service.errors import RoundServiceError
+from app.round.exceptions import RoundError, StartRoundException
 from app.round.service.start_round import start_round
 
 
@@ -36,8 +36,8 @@ class TestStartRound(unittest.TestCase):
         mock_save_round_start.side_effect = Exception("DB down")
         session = MagicMock()
 
-        with self.assertRaises(RoundServiceError) as ctx:
+        with self.assertRaises(StartRoundException) as ctx:
             start_round(session=session, user_id="u1")
 
         self.assertEqual(ctx.exception.status_code, 500)
-        self.assertEqual(ctx.exception.detail, "Failed to start round")
+        self.assertEqual(ctx.exception.message, "Failed to start round")

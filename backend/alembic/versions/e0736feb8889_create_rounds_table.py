@@ -26,6 +26,8 @@ def upgrade() -> None:
     sa.Column('user_id', sa.String(), nullable=False),
     sa.Column('image_id', sa.String(), nullable=False),
     sa.Column('prompt_id', sa.String(), nullable=False),
+    sa.Column('round_id', sa.String(), nullable=False),
+    sa.Column('generated_image_url', sa.String(), nullable=False),
     sa.Column('similarity_score', sa.Float(), nullable=False),
     sa.Column('time_taken', sa.Integer(), nullable=False),
     sa.Column('attempt_number', sa.Integer(), nullable=False),
@@ -34,6 +36,7 @@ def upgrade() -> None:
     )
     op.create_index(op.f('ix_attempts_image_id'), 'attempts', ['image_id'], unique=False)
     op.create_index(op.f('ix_attempts_prompt_id'), 'attempts', ['prompt_id'], unique=False)
+    op.create_index(op.f('ix_attempts_round_id'), 'attempts', ['round_id'], unique=False)
     op.create_index(op.f('ix_attempts_user_id'), 'attempts', ['user_id'], unique=False)
     op.create_table('images',
     sa.Column('id', sa.String(), nullable=False),
@@ -88,6 +91,7 @@ def downgrade() -> None:
     op.drop_table('prompts')
     op.drop_table('images')
     op.drop_index(op.f('ix_attempts_user_id'), table_name='attempts')
+    op.drop_index(op.f('ix_attempts_round_id'), table_name='attempts')
     op.drop_index(op.f('ix_attempts_prompt_id'), table_name='attempts')
     op.drop_index(op.f('ix_attempts_image_id'), table_name='attempts')
     op.drop_table('attempts')

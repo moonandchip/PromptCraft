@@ -1,17 +1,17 @@
 from pydantic import BaseModel, Field
 
 
-class SubmitRequest(BaseModel):
+class RoundSubmitRequest(BaseModel):
     round_id: str = Field(min_length=1, max_length=100)
     user_prompt: str = Field(min_length=1, max_length=2000)
 
 
-class SubmitResponse(BaseModel):
+class RoundSubmitResponse(BaseModel):
     generated_image_url: str
     similarity_score: float = 0.0
 
 
-class StartRoundResponse(BaseModel):
+class RoundStartResponse(BaseModel):
     round_id: str
     target_image_url: str
 
@@ -23,8 +23,19 @@ class RoundInfo(BaseModel):
     reference_image: str
 
 
-class AttemptInfo(BaseModel):
+class RoundAttemptResponse(BaseModel):
     attempt_number: int = Field(ge=1)
     prompt: str
     generated_image_url: str
     similarity_score: float = 0.0
+
+
+class RoundHistoryResponse(BaseModel):
+    round_id: str
+    title: str
+    difficulty: str
+    target_image_url: str
+    best_score: float = 0.0
+    attempt_count: int = 0
+
+

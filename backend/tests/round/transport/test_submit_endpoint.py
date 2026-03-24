@@ -3,11 +3,10 @@
 import unittest
 from unittest.mock import MagicMock, patch
 
-from fastapi import HTTPException
-
 from app.auth.models import UserResponse
-from app.round.models import RoundInfo, SubmitRequest, SubmitResponse
-from app.round.service.errors import RoundServiceError
+from app.round.models import RoundInfo, RoundSubmitRequest, RoundSubmitResponse
+from app.round.exceptions import RoundError, SubmitRoundException
+from app.response import ApiResponse
 from app.round.transport.get_rounds_endpoint import get_rounds_endpoint
 from app.round.transport.submit_endpoint import submit_endpoint
 
@@ -29,21 +28,23 @@ class TestGetRoundsEndpoint(unittest.TestCase):
 
         result = get_rounds_endpoint()
 
-        self.assertEqual(result, expected_rounds)
+        self.assertIsInstance(result, ApiResponse)
+        self.assertEqual(result.data, expected_rounds)
         mock_get_rounds.assert_called_once_with()
 
 
 class TestSubmitEndpoint(unittest.TestCase):
     @patch("app.round.transport.submit_endpoint.submit_round", autospec=True)
     def test_submit_endpoint_returns_service_response(self, mock_submit_round):
-        expected = SubmitResponse(generated_image_url="https://example.com/generated.jpg", similarity_score=72.5)
+        expected = RoundSubmitResponse(generated_image_url="https://example.com/generated.jpg", similarity_score=72.5)
         mock_submit_round.return_value = expected
         session = MagicMock()
-        body = SubmitRequest(round_id="ancient-temple", user_prompt="a majestic scene")
+        body = RoundSubmitRequest(round_id="ancient-temple", user_prompt="a majestic scene")
 
         response = submit_endpoint(body=body, current_user=_MOCK_USER, session=session)
 
-        self.assertEqual(response, expected)
+        self.assertIsInstance(response, ApiResponse)
+        self.assertEqual(response.data, expected)
         mock_submit_round.assert_called_once_with(
             session=session,
             user_email="test@example.com",
@@ -52,13 +53,15 @@ class TestSubmitEndpoint(unittest.TestCase):
         )
 
     @patch("app.round.transport.submit_endpoint.submit_round", autospec=True)
-    def test_submit_endpoint_maps_round_service_error_to_http_exception(self, mock_submit_round):
-        mock_submit_round.side_effect = RoundServiceError(status_code=404, detail="Round not found")
+    def test_submit_endpoint_maps_round_service_error_to_exception(self, mock_submit_round):
+        mock_submit_round.side_effect = SubmitRoundException(
+            status_code=404, error_code=RoundError.NOT_FOUND, message="Round not found",
+        )
         session = MagicMock()
-        body = SubmitRequest(round_id="missing-round", user_prompt="some prompt")
+        body = RoundSubmitRequest(round_id="missing-round", user_prompt="some prompt")
 
-        with self.assertRaises(HTTPException) as ctx:
+        with self.assertRaises(SubmitRoundException) as ctx:
             submit_endpoint(body=body, current_user=_MOCK_USER, session=session)
 
         self.assertEqual(ctx.exception.status_code, 404)
-        self.assertEqual(ctx.exception.detail, "Round not found")
+        self.assertEqual(ctx.exception.message, "Round not found")

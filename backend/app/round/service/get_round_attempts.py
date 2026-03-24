@@ -1,10 +1,10 @@
 from sqlalchemy.orm import Session
 
 from ..data import get_attempts_by_round_id
-from ..models import AttemptInfo
+from ..models import RoundAttemptResponse
 
 
-def get_round_attempts(session: Session, user_id: str, round_id: str) -> list[AttemptInfo]:
+def get_round_attempts(session: Session, user_id: str, round_id: str) -> list[RoundAttemptResponse]:
     """Returns all attempts for a user and round ordered by attempt number.
 
     Args:
@@ -20,7 +20,7 @@ def get_round_attempts(session: Session, user_id: str, round_id: str) -> list[At
     """
     attempts = get_attempts_by_round_id(session=session, user_id=user_id, round_id=round_id)
     return [
-        AttemptInfo(
+        RoundAttemptResponse(
             attempt_number=attempt_number,
             prompt=prompt,
             generated_image_url=generated_image_url,

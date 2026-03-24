@@ -3,7 +3,7 @@ from unittest.mock import create_autospec, patch
 
 from sqlalchemy.orm import Session
 
-from app.round.models import AttemptInfo
+from app.round.models import RoundAttemptResponse
 from app.round.service.get_round_attempts import get_round_attempts
 
 
@@ -21,13 +21,13 @@ class TestGetRoundAttempts(unittest.TestCase):
         self.assertEqual(
             attempts,
             [
-                AttemptInfo(
+                RoundAttemptResponse(
                     attempt_number=1,
                     prompt="first prompt",
                     generated_image_url="https://example.com/first.png",
                     similarity_score=45.0,
                 ),
-                AttemptInfo(
+                RoundAttemptResponse(
                     attempt_number=2,
                     prompt="second prompt",
                     generated_image_url="https://example.com/second.png",

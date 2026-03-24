@@ -35,3 +35,8 @@ ERR_INVALID_AUTH_REGISTER_RESPONSE = "invalid auth register response"
 ERR_INVALID_AUTH_ME_RESPONSE = "invalid auth me response"
 ERR_INVALID_USER_PAYLOAD_FROM_AUTH_SERVICE = "invalid user payload from auth service"
 ERR_MISSING_BEARER_TOKEN = "missing bearer token"
+
+# Feature names for structured logging
+LOGIN_FEATURE = "login"
+REGISTER_FEATURE = "register"
+RESOLVE_TOKEN_FEATURE = "resolve_token"

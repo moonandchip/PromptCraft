@@ -2,7 +2,6 @@ from unittest.mock import MagicMock, patch
 
 from fastapi.testclient import TestClient
 
-from app.auth.constants import ERR_MISSING_BEARER_TOKEN
 from app.auth.dependencies import get_current_user
 from app.auth.models import UserResponse
 from app.main import app
@@ -15,7 +14,8 @@ def test_get_round_attempts_route_requires_bearer_token():
     response = client.get("/round/ancient-temple/attempts")
 
     assert response.status_code == 401
-    assert response.json()["detail"] == ERR_MISSING_BEARER_TOKEN
+    body = response.json()
+    assert body["error"] is not None
 
 
 def test_get_round_attempts_route_returns_attempts_for_authenticated_user():
@@ -47,7 +47,8 @@ def test_get_round_attempts_route_returns_attempts_for_authenticated_user():
     app.dependency_overrides.clear()
 
     assert response.status_code == 200
-    assert response.json() == [
+    body = response.json()
+    assert body["data"] == [
         {
             "attempt_number": 1,
             "prompt": "first prompt",

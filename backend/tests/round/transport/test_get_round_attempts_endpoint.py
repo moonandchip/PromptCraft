@@ -2,7 +2,8 @@ import unittest
 from unittest.mock import MagicMock, patch
 
 from app.auth.models import UserResponse
-from app.round.models import AttemptInfo
+from app.round.models import RoundAttemptResponse
+from app.response import ApiResponse
 from app.round.transport.get_round_attempts_endpoint import get_round_attempts_endpoint
 
 
@@ -10,7 +11,7 @@ class TestGetRoundAttemptsEndpoint(unittest.TestCase):
     @patch("app.round.transport.get_round_attempts_endpoint.get_round_attempts", autospec=True)
     def test_delegates_to_service_with_current_user_and_round_id(self, mock_get_round_attempts):
         expected = [
-            AttemptInfo(
+            RoundAttemptResponse(
                 attempt_number=1,
                 prompt="first prompt",
                 generated_image_url="https://example.com/first.png",
@@ -27,7 +28,8 @@ class TestGetRoundAttemptsEndpoint(unittest.TestCase):
             session=session,
         )
 
-        self.assertEqual(response, expected)
+        self.assertIsInstance(response, ApiResponse)
+        self.assertEqual(response.data, expected)
         mock_get_round_attempts.assert_called_once_with(
             session=session,
             user_id="u1",

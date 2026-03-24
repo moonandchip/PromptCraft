@@ -1,38 +1,43 @@
-from fastapi import Depends, HTTPException
+import logging
+
+from fastapi import Depends
 from sqlalchemy.orm import Session
 
 from app.auth.dependencies import get_current_user
 from app.auth.models import UserResponse
+from app.exceptions import AppException
+from app.response import ApiResponse
+from app.constants import ROUND_CHANNEL
+from app.round.constants import SUBMIT_ROUND_FEATURE
+from app.round.exceptions import RoundError, SubmitRoundException
 
-from ..models import SubmitRequest, SubmitResponse
-from ..service import RoundServiceError, submit_round
+from ..models import RoundSubmitRequest, RoundSubmitResponse
+from ..service import submit_round
 from .get_db_session import get_db_session
+
+logger = logging.getLogger(__name__)
 
 
 def submit_endpoint(
-    body: SubmitRequest,
+    body: RoundSubmitRequest,
     current_user: UserResponse = Depends(get_current_user),
     session: Session = Depends(get_db_session),
-) -> SubmitResponse:
-    """Handles round submission for the authenticated user.
-
-    Args:
-        body: The validated submission request payload.
-        current_user: The authenticated user submitting the prompt.
-        session: The SQLAlchemy session used for persistence operations.
-
-    Returns:
-        A submission response with generated image URL and similarity score.
-
-    Raises:
-        HTTPException: If service-layer validation, generation, or persistence fails.
-    """
+) -> ApiResponse[RoundSubmitResponse]:
     try:
-        return submit_round(
+        result = submit_round(
             session=session,
             user_email=current_user.email,
             round_id=body.round_id,
             user_prompt=body.user_prompt,
         )
-    except RoundServiceError as exc:
-        raise HTTPException(status_code=exc.status_code, detail=exc.detail) from exc
+        return ApiResponse(data=result)
+    except AppException:
+        raise
+    except Exception as exc:
+        logger.exception(
+            "Unexpected error in submit_round",
+            extra={"channel": ROUND_CHANNEL, "feature": SUBMIT_ROUND_FEATURE, "user": current_user.email},
+        )
+        raise SubmitRoundException(
+            status_code=500, error_code=RoundError.UNKNOWN_ERROR, message="An unexpected error occurred",
+        ) from exc
