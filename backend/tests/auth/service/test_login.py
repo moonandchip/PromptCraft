@@ -1,8 +1,8 @@
 import unittest
 from unittest.mock import patch
 
+from app.auth.domain.exceptions import LoginException
 from app.auth.models import LoginRequest
-from app.auth.service.errors import AuthServiceError
 from app.auth.service.login import login
 from app.auth.service.types import AuthServiceConfig
 
@@ -19,5 +19,5 @@ class TestLoginServiceFunction(unittest.TestCase):
     def test_login_invalid_payload(self, mock_post_internal_login):
         config = AuthServiceConfig(base_url="http://auth.test", timeout_seconds=10.0)
         mock_post_internal_login.return_value = {"token_type": "bearer"}
-        with self.assertRaises(AuthServiceError):
+        with self.assertRaises(LoginException):
             login(LoginRequest(email="user@example.com", password="strongpass123"), config)

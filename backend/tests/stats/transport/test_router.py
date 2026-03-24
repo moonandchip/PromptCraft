@@ -1,6 +1,7 @@
 import unittest
 
 from app.stats.models import StatsResponse
+from app.response import ApiResponse
 from app.stats.transport.router import router
 
 
@@ -10,4 +11,4 @@ class TestStatsRouterModule(unittest.TestCase):
         self.assertIn("/stats/me", route_by_path)
         route = route_by_path["/stats/me"]
         self.assertIn("GET", route.methods)
-        self.assertIs(route.response_model, StatsResponse)
+        self.assertEqual(route.response_model, ApiResponse[StatsResponse])

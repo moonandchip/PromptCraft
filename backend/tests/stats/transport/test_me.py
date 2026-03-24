@@ -16,5 +16,5 @@ class TestMeStatsEndpoint(unittest.TestCase):
 
         response = me_stats_endpoint(current_user=current_user, session=mock_session)
 
-        self.assertEqual(response, expected_response)
+        self.assertEqual(response.data, expected_response)
         mock_get_user_stats.assert_called_once_with(session=mock_session, user_id="u1")

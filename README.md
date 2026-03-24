@@ -34,22 +34,17 @@ cd PromptCraft
 ```
 
 ### 2) Environment Variables
-Create a root `.env` file if you want to override defaults used by `docker compose`.
+Docker Compose loads environment from service-local files:
 
-You can start from:
-```bash
-cp .env.example .env
-```
+- `backend/.env` (copy from `backend/.env.example`)
+- `auth/.env` (copy from `auth/.env.example`)
+- `frontend/.env` (copy from `frontend/.env.example`)
+
+Note: backend/auth DB URLs should use `db` as host inside Docker (not `localhost`):
 
 ```env
-VITE_API_URL=http://localhost:8000
-LEONARDO_API_KEY=your_key_here
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/promptcraft?schema=public
-AUTH_DATABASE_URL=postgresql://postgres:postgres@localhost:5432/promptcraft?schema=auth
-AUTH_SERVICE_URL=http://auth:3000
-AUTH_SECRET=replace-with-long-random-string
-AUTH_URL=http://localhost:3000
-AUTH_TRUST_HOST=true
+DATABASE_URL=postgresql://postgres:postgres@db:5432/promptcraft?schema=public
+AUTH_DATABASE_URL=postgresql://postgres:postgres@db:5432/promptcraft?schema=auth
 ```
 
 ### 3) Build and Run
@@ -63,6 +58,7 @@ docker compose up --build
 - Frontend: `http://localhost:5173`
 - Backend health check: `http://127.0.0.1:8000/health`
 - Auth service: `http://127.0.0.1:3000`
+- Postgres: `localhost:5432` (user/password: `postgres` / `postgres`, db: `promptcraft`)
 
 Expected health response:
 ```json

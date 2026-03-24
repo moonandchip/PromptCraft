@@ -8,4 +8,4 @@ class TestMeEndpointTransportFunction(unittest.TestCase):
     def test_me_endpoint_returns_current_user(self):
         current_user = UserResponse(id="u1", email="user@example.com", name="User")
         result = me_endpoint(current_user=current_user)
-        self.assertEqual(result.id, "u1")
+        self.assertEqual(result.data.id, "u1")

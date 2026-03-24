@@ -1,5 +1,4 @@
 from .clip_scoring import compute_similarity_score
-from .errors import RoundServiceError
 from .get_round_by_id import get_round_by_id
 from .get_round_attempts import get_round_attempts
 from .get_rounds import get_rounds
@@ -11,7 +10,6 @@ __all__ = [
     "compute_similarity_score",
     "generate_image",
     "GenerationError",
-    "RoundServiceError",
     "get_round_by_id",
     "get_round_attempts",
     "get_rounds",
