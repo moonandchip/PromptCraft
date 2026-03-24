@@ -5,8 +5,8 @@ from fastapi import Depends
 from app.exceptions import AppException
 from app.response import ApiResponse
 from app.constants import AUTH_CHANNEL
-from app.auth.domain.constants import LOGIN_FEATURE
-from app.auth.domain.exceptions import AuthError, LoginException
+from app.auth.constants import LOGIN_FEATURE
+from app.auth.exceptions import AuthError, LoginException
 
 from ..models import LoginRequest, TokenResponse
 from ..service.login import login

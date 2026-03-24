@@ -8,8 +8,8 @@ from app.auth.models import UserResponse
 from app.exceptions import AppException
 from app.response import ApiResponse
 from app.constants import ROUND_CHANNEL
-from app.round.domain.constants import SUBMIT_ROUND_FEATURE
-from app.round.domain.exceptions import RoundError, SubmitRoundException
+from app.round.constants import SUBMIT_ROUND_FEATURE
+from app.round.exceptions import RoundError, SubmitRoundException
 
 from ..models import RoundSubmitRequest, RoundSubmitResponse
 from ..service import submit_round

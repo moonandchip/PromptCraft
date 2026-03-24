@@ -8,8 +8,8 @@ from app.auth.models import UserResponse
 from app.exceptions import AppException
 from app.response import ApiResponse
 from app.constants import ROUND_CHANNEL
-from app.round.domain.constants import START_ROUND_FEATURE
-from app.round.domain.exceptions import RoundError, StartRoundException
+from app.round.constants import START_ROUND_FEATURE
+from app.round.exceptions import RoundError, StartRoundException
 
 from ..models import RoundStartResponse
 from ..service import start_round

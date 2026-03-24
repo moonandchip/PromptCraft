@@ -4,8 +4,8 @@ from random import choice
 from sqlalchemy.orm import Session
 
 from app.constants import ROUND_CHANNEL
-from app.round.domain.constants import START_ROUND_FEATURE
-from app.round.domain.exceptions import RoundError, StartRoundException
+from app.round.constants import START_ROUND_FEATURE
+from app.round.exceptions import RoundError, StartRoundException
 
 from ..constants import ROUNDS
 from ..data import save_round_start

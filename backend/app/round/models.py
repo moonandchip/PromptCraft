@@ -30,3 +30,12 @@ class RoundAttemptResponse(BaseModel):
     similarity_score: float = 0.0
 
 
+class RoundHistoryResponse(BaseModel):
+    round_id: str
+    title: str
+    difficulty: str
+    target_image_url: str
+    best_score: float = 0.0
+    attempt_count: int = 0
+
+

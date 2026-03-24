@@ -1,8 +1,8 @@
 import logging
 
 from app.constants import AUTH_CHANNEL
-from app.auth.domain.constants import LOGIN_FEATURE
-from app.auth.domain.exceptions import AuthError, LoginException
+from app.auth.constants import LOGIN_FEATURE
+from app.auth.exceptions import AuthError, LoginException
 
 from ..constants import BEARER_SCHEME, KEY_ACCESS_TOKEN, KEY_TOKEN_TYPE
 from ..data.post_internal_login import post_internal_login

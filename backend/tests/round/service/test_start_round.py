@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import MagicMock, patch
 
-from app.round.domain.exceptions import RoundError, StartRoundException
+from app.round.exceptions import RoundError, StartRoundException
 from app.round.service.start_round import start_round
 
 

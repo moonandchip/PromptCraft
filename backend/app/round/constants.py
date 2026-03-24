@@ -55,3 +55,9 @@ ERR_GENERATION_FAILED = "Image generation failed"
 ERR_GENERATION_TIMEOUT = "Image generation timed out"
 ERR_ROUND_NOT_FOUND = "Round not found"
 ERR_GENERATION_API_ERROR = "Leonardo API error"
+
+# Feature names for structured logging
+SUBMIT_ROUND_FEATURE = "submit_round"
+START_ROUND_FEATURE = "start_round"
+GET_ROUND_ATTEMPTS_FEATURE = "get_round_attempts"
+GET_ROUNDS_FEATURE = "get_rounds"

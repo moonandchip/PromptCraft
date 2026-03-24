@@ -5,8 +5,8 @@ from fastapi import Depends
 from app.exceptions import AppException
 from app.response import ApiResponse
 from app.constants import AUTH_CHANNEL
-from app.auth.domain.constants import REGISTER_FEATURE
-from app.auth.domain.exceptions import AuthError, RegisterException
+from app.auth.constants import REGISTER_FEATURE
+from app.auth.exceptions import AuthError, RegisterException
 
 from ..models import RegisterRequest, UserResponse
 from ..service.register_user import register_user

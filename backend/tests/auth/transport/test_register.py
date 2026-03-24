@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import patch
 
-from app.auth.domain.exceptions import AuthError, RegisterException
+from app.auth.exceptions import AuthError, RegisterException
 from app.auth.models import RegisterRequest, UserResponse
 from app.auth.service.errors import AuthServiceError
 from app.auth.service.types import AuthServiceConfig

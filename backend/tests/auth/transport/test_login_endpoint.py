@@ -1,7 +1,7 @@
 import unittest
 from unittest.mock import patch
 
-from app.auth.domain.exceptions import AuthError, LoginException
+from app.auth.exceptions import AuthError, LoginException
 from app.auth.models import LoginRequest, TokenResponse
 from app.auth.service.types import AuthServiceConfig
 from app.auth.transport.login import login_endpoint

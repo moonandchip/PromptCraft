@@ -1,8 +1,8 @@
 import logging
 
 from app.constants import AUTH_CHANNEL
-from app.auth.domain.constants import REGISTER_FEATURE
-from app.auth.domain.exceptions import AuthError, RegisterException
+from app.auth.constants import REGISTER_FEATURE
+from app.auth.exceptions import AuthError, RegisterException
 
 from ..constants import ERR_INVALID_AUTH_REGISTER_RESPONSE
 from ..data.post_register import post_register

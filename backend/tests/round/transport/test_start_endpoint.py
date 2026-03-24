@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, patch
 
 from app.auth.models import UserResponse
 from app.round.models import RoundStartResponse
-from app.round.domain.exceptions import RoundError, StartRoundException
+from app.round.exceptions import RoundError, StartRoundException
 from app.response import ApiResponse
 from app.round.transport.start_endpoint import start_endpoint
 

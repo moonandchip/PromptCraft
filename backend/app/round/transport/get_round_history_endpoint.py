@@ -8,30 +8,28 @@ from app.auth.models import UserResponse
 from app.exceptions import AppException
 from app.response import ApiResponse
 from app.constants import ROUND_CHANNEL
-from app.round.constants import GET_ROUND_ATTEMPTS_FEATURE
-from app.round.exceptions import GetRoundAttemptsException, RoundError
+from app.round.exceptions import RoundError, GetRoundAttemptsException
 
-from ..models import RoundAttemptResponse
-from ..service import get_round_attempts
+from ..models import RoundHistoryResponse
+from ..service import get_round_history
 from .get_db_session import get_db_session
 
 logger = logging.getLogger(__name__)
 
 
-def get_round_attempts_endpoint(
-    id: str,
+def get_round_history_endpoint(
     current_user: UserResponse = Depends(get_current_user),
     session: Session = Depends(get_db_session),
-) -> ApiResponse[list[RoundAttemptResponse]]:
+) -> ApiResponse[list[RoundHistoryResponse]]:
     try:
-        result = get_round_attempts(session=session, user_id=current_user.id, round_id=id)
+        result = get_round_history(session=session, user_id=current_user.id)
         return ApiResponse(data=result)
     except AppException:
         raise
     except Exception as exc:
         logger.exception(
-            "Unexpected error in get_round_attempts",
-            extra={"channel": ROUND_CHANNEL, "feature": GET_ROUND_ATTEMPTS_FEATURE, "user": current_user.id},
+            "Unexpected error in get_round_history",
+            extra={"channel": ROUND_CHANNEL, "feature": "get_round_history", "user": current_user.id},
         )
         raise GetRoundAttemptsException(
             status_code=500, error_code=RoundError.UNKNOWN_ERROR, message="An unexpected error occurred",

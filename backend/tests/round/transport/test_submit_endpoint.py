@@ -5,7 +5,7 @@ from unittest.mock import MagicMock, patch
 
 from app.auth.models import UserResponse
 from app.round.models import RoundInfo, RoundSubmitRequest, RoundSubmitResponse
-from app.round.domain.exceptions import RoundError, SubmitRoundException
+from app.round.exceptions import RoundError, SubmitRoundException
 from app.response import ApiResponse
 from app.round.transport.get_rounds_endpoint import get_rounds_endpoint
 from app.round.transport.submit_endpoint import submit_endpoint

@@ -1,9 +1,10 @@
 from fastapi import APIRouter, status
 
 from ..constants import ROUTER_PREFIX, ROUTER_TAG
-from ..models import RoundAttemptResponse, RoundInfo, RoundStartResponse, RoundSubmitResponse
+from ..models import RoundAttemptResponse, RoundHistoryResponse, RoundInfo, RoundStartResponse, RoundSubmitResponse
 from app.response import ApiResponse
 from .get_round_attempts_endpoint import get_round_attempts_endpoint
+from .get_round_history_endpoint import get_round_history_endpoint
 from .get_rounds_endpoint import get_rounds_endpoint
 from .start_endpoint import start_endpoint
 from .submit_endpoint import submit_endpoint
@@ -31,6 +32,14 @@ router.add_api_route(
     endpoint=start_endpoint,
     methods=["POST"],
     response_model=ApiResponse[RoundStartResponse],
+    status_code=status.HTTP_200_OK,
+)
+
+router.add_api_route(
+    path="/history",
+    endpoint=get_round_history_endpoint,
+    methods=["GET"],
+    response_model=ApiResponse[list[RoundHistoryResponse]],
     status_code=status.HTTP_200_OK,
 )
 

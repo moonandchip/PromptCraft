@@ -4,7 +4,7 @@ from unittest.mock import patch
 from fastapi.security import HTTPAuthorizationCredentials
 
 from app.auth.constants import ERR_MISSING_BEARER_TOKEN
-from app.auth.domain.exceptions import AuthError, ResolveTokenException
+from app.auth.exceptions import AuthError, ResolveTokenException
 from app.auth.models import UserResponse
 from app.auth.service.types import AuthServiceConfig
 from app.auth.transport.get_current_user import get_current_user

@@ -1,4 +1,4 @@
-from app.auth.domain.exceptions import AuthError, ResolveTokenException
+from app.auth.exceptions import AuthError, ResolveTokenException
 
 from ..constants import ERR_INVALID_AUTH_ME_RESPONSE
 from ..data.get_internal_me import get_internal_me

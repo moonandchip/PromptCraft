@@ -1,7 +1,7 @@
 from fastapi import Depends, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-from app.auth.domain.exceptions import AuthError, ResolveTokenException
+from app.auth.exceptions import AuthError, ResolveTokenException
 
 from ..constants import BEARER_SCHEME, ERR_MISSING_BEARER_TOKEN
 from ..models import UserResponse

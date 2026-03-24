@@ -8,8 +8,8 @@ from app.auth.models import UserResponse
 from app.exceptions import AppException
 from app.response import ApiResponse
 from app.constants import STATS_CHANNEL
-from app.stats.domain.constants import GET_STATS_FEATURE
-from app.stats.domain.exceptions import GetStatsException, StatsError
+from app.stats.constants import GET_STATS_FEATURE
+from app.stats.exceptions import GetStatsException, StatsError
 
 from ..models import StatsResponse
 from ..service import get_user_stats
