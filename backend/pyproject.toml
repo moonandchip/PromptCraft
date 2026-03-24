@@ -11,10 +11,11 @@ fastapi = "0.129.0"
 uvicorn = "0.40.0"
 python-dotenv = "1.2.1"
 sqlalchemy = "^2.0.0"
-psycopg = "^3.1.0"
+psycopg = {extras = ["binary"], version = "^3.3.3"}
 transformers = "^4.47.0"
 Pillow = "^11.0.0"
 psycopg2-binary = "^2.9"
+alembic = "^1.18.4"
 
 [[tool.poetry.source]]
 name = "pytorch-cpu"
