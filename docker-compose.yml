@@ -23,8 +23,8 @@ services:
     depends_on:
       - backend
     environment:
-      VITE_API_URL: ${VITE_API_URL:-http://localhost:8000}
-      VITE_AUTH_URL: ${VITE_AUTH_URL:-http://localhost:3000}
+      VITE_API_URL: ${VITE_API_URL:-http://100.30.88.34:8000}
+      VITE_AUTH_URL: ${VITE_AUTH_URL:-http://100.30.88.34:3000}
       CHOKIDAR_USEPOLLING: "true"
     volumes:
       - ./frontend:/app
@@ -39,7 +39,7 @@ services:
     environment:
       AUTH_DATABASE_URL: ${AUTH_DATABASE_URL:-}
       AUTH_SECRET: ${AUTH_SECRET:-replace-with-long-random-string}
-      AUTH_URL: ${AUTH_URL:-http://localhost:3000}
+      AUTH_URL: ${AUTH_URL:-http://100.30.88.34:3000}
       AUTH_TRUST_HOST: ${AUTH_TRUST_HOST:-true}
       CHOKIDAR_USEPOLLING: "true"
     volumes:

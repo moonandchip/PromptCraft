@@ -1,7 +1,8 @@
 const AUTH_URL = import.meta.env.VITE_AUTH_URL;
+const API_URL = import.meta.env.VITE_API_URL;
 
 export async function register(email, password) {
-  const res = await fetch(`${AUTH_URL}/api/register`, {
+  const res = await fetch(`${API_URL}/auth/register`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -19,7 +20,7 @@ export async function register(email, password) {
 }
 
 export async function login(email, password) {
-  const res = await fetch(`${AUTH_URL}/api/internal/login`, {
+  const res = await fetch(`${API_URL}/auth/login`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -53,7 +54,7 @@ export async function getMe() {
     throw new Error("No token");
   }
 
-  const res = await fetch(`${AUTH_URL}/api/internal/me`, {
+  const res = await fetch(`${API_URL}/auth/me`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
