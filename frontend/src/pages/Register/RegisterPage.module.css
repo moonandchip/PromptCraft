@@ -41,13 +41,13 @@
 
 .input:focus {
   outline: none;
-  border-color: #4da6ff;
+  border-color: var(--primary-color);
   box-shadow: 0 0 0 2px rgba(77, 166, 255, 0.2);
 }
 
 .button {
   padding: 12px;
-  background-color: #4da6ff;
+  background-color: var(--primary-color);
   border: none;
   color: white;
   font-weight: 600;
@@ -61,12 +61,12 @@
 }
 
 .button:hover {
-  background-color: #3399ff;
+  background-color: var(--primary-color-hover);
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
 }
 
 .button:active {
-  background-color: #1a8cff;
+  background-color: var(--primary-color-active);
 }
 
 .success {

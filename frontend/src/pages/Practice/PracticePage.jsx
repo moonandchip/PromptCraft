@@ -1,205 +1,132 @@
-import { useState, useEffect } from "react";
-import { getRounds, submitPrompt } from "../../api";
+import { useEffect, useState } from "react";
+import { startRound, submitPrompt } from "../../api";
 import { getToken } from "../../auth";
 import styles from "./PracticePage.module.css";
 
-// Static image map – Vite resolves these at build time
-import ancientTemple from "../../../reference_images/ancient-temple.jpg";
-import futuristicCity from "../../../reference_images/futuristic-city.jpg";
-import goldenSunset from "../../../reference_images/golden-sunset.jpeg";
-import snowyForest from "../../../reference_images/snowy-forest.jpg";
-import underwaterWorld from "../../../reference_images/underwater-world.jpeg";
-
-const REFERENCE_IMAGE_MAP = {
-  "ancient-temple.jpg": ancientTemple,
-  "futuristic-city.jpg": futuristicCity,
-  "golden-sunset.jpeg": goldenSunset,
-  "snowy-forest.jpg": snowyForest,
-  "underwater-world.jpeg": underwaterWorld,
-};
-
-// Fallback rounds if the backend isn't available yet
-const FALLBACK_ROUNDS = [
-  { id: "ancient-temple", title: "Ancient Temple", difficulty: "easy", reference_image: "ancient-temple.jpg" },
-  { id: "futuristic-city", title: "Futuristic City", difficulty: "medium", reference_image: "futuristic-city.jpg" },
-  { id: "golden-sunset", title: "Golden Sunset", difficulty: "easy", reference_image: "golden-sunset.jpeg" },
-  { id: "snowy-forest", title: "Snowy Forest", difficulty: "easy", reference_image: "snowy-forest.jpg" },
-  { id: "underwater-world", title: "Underwater World", difficulty: "hard", reference_image: "underwater-world.jpeg" },
-];
-
-const DIFFICULTY_ORDER = { easy: 0, medium: 1, hard: 2 };
-const sortByDifficulty = (arr) =>
-  [...arr].sort(
-    (a, b) =>
-      (DIFFICULTY_ORDER[a.difficulty] ?? 99) - (DIFFICULTY_ORDER[b.difficulty] ?? 99)
-  );
-
-const SORTED_FALLBACK_ROUNDS = sortByDifficulty(FALLBACK_ROUNDS);
-
-const MAX_PROMPT_LENGTH = 2000;
+const TEST_ROUND_ID = "ancient-temple";
 
 export default function PracticePage() {
-  const [rounds, setRounds] = useState(SORTED_FALLBACK_ROUNDS);
-  const [selectedRound, setSelectedRound] = useState(SORTED_FALLBACK_ROUNDS[0]);
+  const [referenceImage, setReferenceImage] = useState(null);
+  const [generatedImage, setGeneratedImage] = useState(null);
   const [prompt, setPrompt] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [generatedImageUrl, setGeneratedImageUrl] = useState(null);
+  const [loadingGenerated, setLoadingGenerated] = useState(false);
   const [similarityScore, setSimilarityScore] = useState(null);
   const [error, setError] = useState(null);
+  const [referenceError, setReferenceError] = useState(null);
 
-  // Fetch rounds from backend; fall back to local list if unavailable
   useEffect(() => {
-    getRounds()
-      .then((data) => {
-        if (data && data.length > 0) {
-          const sorted = sortByDifficulty(data);
-          setRounds(sorted);
-          setSelectedRound(sorted[0]);
-        }
-      })
-      .catch(() => {
-        // Use fallback rounds (already set)
-      });
+    async function loadReference() {
+      try {
+        const data = await startRound();
+        setReferenceImage(data.target_image_url);
+      } catch (err) {
+        console.error("Failed to load reference image:", err);
+        setReferenceError("Failed to load reference image.");
+      }
+    }
+    loadReference();
   }, []);
 
-  function handleSelectRound(round) {
-    setSelectedRound(round);
-    setGeneratedImageUrl(null);
-    setSimilarityScore(null);
-    setError(null);
-    setPrompt("");
-  }
+  const handlePromptChange = (e) => setPrompt(e.target.value.slice(0, 2000));
 
-  async function handleSubmit(e) {
-    e.preventDefault();
-    if (!prompt.trim() || isLoading) return;
-
-    setIsLoading(true);
-    setGeneratedImageUrl(null);
+  const handleGenerate = async () => {
+    if (!prompt.trim()) return;
+    setLoadingGenerated(true);
+    setGeneratedImage(null);
     setSimilarityScore(null);
     setError(null);
 
     try {
-  const result = await submitPrompt(
-    { round_id: selectedRound.id, user_prompt: prompt.trim() },
-    getToken()
-  );
-
-  setGeneratedImageUrl(result.data.generated_image_url);
-  setSimilarityScore(Number(result.data.similarity_score));
-  
-} catch (err) {
-  setError(err.message || "Something went wrong");
-} finally {
-      setIsLoading(false);
+      const result = await submitPrompt(
+        { round_id: TEST_ROUND_ID, user_prompt: prompt.trim() },
+        getToken(),
+      );
+      setGeneratedImage(result.data.generated_image_url);
+      setSimilarityScore(Number(result.data.similarity_score));
+    } catch (err) {
+      console.error(err);
+      setError(err.message || "Failed to generate image.");
+    } finally {
+      setLoadingGenerated(false);
     }
-  }
-
-  const referenceImageSrc = REFERENCE_IMAGE_MAP[selectedRound?.reference_image];
-  const canSubmit = prompt.trim().length > 0 && !isLoading;
+  };
 
   return (
     <div className={styles.page}>
-      {/* Header */}
-      <div className={styles.header}>
-        <h1>Practice Mode</h1>
-        <p>Select a challenge, write a prompt, and see how close your AI generation matches the reference.</p>
-      </div>
+      <h1 className={styles.title}>Practice Mode</h1>
 
-      {/* Round selector */}
-      <div className={styles.roundSelector}>
-        {rounds.map((round) => (
-          <button
-            key={round.id}
-            className={`${styles.roundCard} ${selectedRound?.id === round.id ? styles.roundCardActive : ""}`}
-            onClick={() => handleSelectRound(round)}
-          >
-            <span className={styles.roundCardTitle}>{round.title}</span>
-            <span className={`${styles.difficultyBadge} ${styles[round.difficulty]}`}>
-              {round.difficulty}
-            </span>
-          </button>
-        ))}
-      </div>
-
-      {/* Image comparison */}
-      <div className={styles.comparisonGrid}>
-        {/* Reference image */}
-        <div className={styles.imagePanel}>
-          <span className={styles.imageLabel}>Reference Image</span>
-          <div className={styles.imageBox}>
-            {referenceImageSrc ? (
-              <img src={referenceImageSrc} alt={selectedRound?.title} />
+      {/* Images Row */}
+      <div className={styles.imagesRow}>
+        {/* Reference Image Bundle */}
+        <div className={styles.imageBundle}>
+          <div className={styles.label}>Reference Image</div>
+          <div className={styles.imageWrapper}>
+            {referenceImage ? (
+              <img src={referenceImage} alt="Reference" />
+            ) : referenceError ? (
+              <span className={styles.placeholder}>
+                <span className={styles.emoji}>❌</span>
+                <span>{referenceError}</span>
+              </span>
             ) : (
-              <div className={styles.imagePlaceholder}>
-                <span className={styles.imagePlaceholderIcon}>🖼️</span>
-                <span>No reference image</span>
-              </div>
+              <span className={styles.placeholder}>
+                <span className={styles.emoji}>🖼️</span>
+                <span>Loading reference...</span>
+              </span>
             )}
           </div>
         </div>
 
-        {/* Generated image */}
-        <div className={styles.imagePanel}>
-          <span className={styles.imageLabel}>Your Generated Image</span>
-          <div className={styles.imageBox}>
-            {isLoading ? (
-              <div className={styles.imagePlaceholder}>
-                <div className={styles.spinner} />
-                <span>Generating image…</span>
-              </div>
-            ) : generatedImageUrl ? (
-              <img src={generatedImageUrl} alt="AI generated result" />
+        {/* Generated Image Bundle */}
+        <div className={styles.imageBundle}>
+          <div className={styles.label}>Your Generated Image</div>
+          <div className={styles.imageWrapper}>
+            {loadingGenerated ? (
+              <span className={styles.placeholder}>
+                <span className={styles.emoji}>⏳</span>
+                <span>Generating...</span>
+              </span>
+            ) : generatedImage ? (
+              <img src={generatedImage} alt="Generated" />
             ) : (
-              <div className={styles.imagePlaceholder}>
-                <span className={styles.imagePlaceholderIcon}>✨</span>
-                <span>Your image will appear here</span>
-              </div>
+              <span className={styles.placeholder}>
+                <span className={styles.emoji}>✨</span>
+                <span>Your image will appear here.</span>
+              </span>
             )}
           </div>
         </div>
       </div>
 
-      {/* Prompt input */}
-      <form className={styles.promptSection} onSubmit={handleSubmit}>
-        <label className={styles.promptLabel} htmlFor="prompt-input">
-          Your Prompt
-        </label>
+      {/* Prompt Section */}
+      <div className={styles.promptSection}>
+        <label className={styles.promptLabel}>Your Prompt</label>
         <textarea
-          id="prompt-input"
-          className={styles.promptTextarea}
-          placeholder={`Describe the scene you see in "${selectedRound?.title}"…`}
+          className={styles.promptInput}
           value={prompt}
-          onChange={(e) => setPrompt(e.target.value.slice(0, MAX_PROMPT_LENGTH))}
-          disabled={isLoading}
-          rows={4}
+          onChange={handlePromptChange}
+          placeholder="Describe what you want the AI to generate..."
+          disabled={loadingGenerated}
         />
-
-        <div className={styles.actionRow}>
+        <div className={styles.promptControls}>
           <button
-            type="submit"
-            className={styles.generateBtn}
-            disabled={!canSubmit}
+            onClick={handleGenerate}
+            className={styles.generateButton}
+            disabled={!prompt.trim() || loadingGenerated}
           >
-            {isLoading ? "Generating…" : "Generate Image"}
+            Generate Image
           </button>
-          <span className={styles.charCount}>
-            {prompt.length} / {MAX_PROMPT_LENGTH}
-          </span>
+          <span className={styles.charCounter}>{prompt.length} / 2000</span>
         </div>
-      </form>
+      </div>
 
-      {/* Error */}
       {error && <div className={styles.errorBanner}>{error}</div>}
 
-      {/* Similarity score */}
       {similarityScore !== null && (
         <div className={styles.scoreRow}>
           <span className={styles.scoreLabel}>Similarity Score:</span>
-          <span className={`${styles.scorePill} ${styles.scorePillActive}`}>
-            {typeof similarityScore !== "number"
-              ? "Scoring..."
-              : `${similarityScore.toFixed(1)} / 100`}
+          <span className={styles.scorePill}>
+            {similarityScore.toFixed(1)} / 100
           </span>
         </div>
       )}
