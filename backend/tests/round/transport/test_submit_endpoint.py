@@ -6,6 +6,7 @@ from unittest.mock import MagicMock, patch
 from app.auth.models import UserResponse
 from app.round.models import RoundInfo, RoundSubmitRequest, RoundSubmitResponse
 from app.round.exceptions import RoundError, SubmitRoundException
+from app.round.types.args import SubmitRoundArgs
 from app.response import ApiResponse
 from app.round.transport.get_rounds_endpoint import get_rounds_endpoint
 from app.round.transport.submit_endpoint import submit_endpoint
@@ -47,15 +48,13 @@ class TestSubmitEndpoint(unittest.TestCase):
         self.assertEqual(response.data, expected)
         mock_submit_round.assert_called_once_with(
             session=session,
-            user_email="test@example.com",
-            round_id="ancient-temple",
-            user_prompt="a majestic scene",
+            args=SubmitRoundArgs(user_email="test@example.com", round_id="ancient-temple", user_prompt="a majestic scene"),
         )
 
     @patch("app.round.transport.submit_endpoint.submit_round", autospec=True)
     def test_submit_endpoint_maps_round_service_error_to_exception(self, mock_submit_round):
         mock_submit_round.side_effect = SubmitRoundException(
-            status_code=404, error_code=RoundError.NOT_FOUND, message="Round not found",
+            RoundError.NOT_FOUND, message="Round not found",
         )
         session = MagicMock()
         body = RoundSubmitRequest(round_id="missing-round", user_prompt="some prompt")

@@ -33,7 +33,7 @@ app.include_router(round_router)
 
 @app.exception_handler(AppException)
 def app_exception_handler(request: Request, exc: AppException) -> JSONResponse:
-    body = ApiResponse(data=None, error=exc.error_code.value, message=exc.message)
+    body = ApiResponse(data=None, error=exc.error.value, message=exc.message)
     return JSONResponse(status_code=exc.status_code, content=body.model_dump())
 
 

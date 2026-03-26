@@ -20,7 +20,7 @@ class TestLoginEndpointTransportFunction(unittest.TestCase):
     def test_login_endpoint_maps_error(self, mock_login):
         config = AuthServiceConfig(base_url="http://auth.test", timeout_seconds=10.0)
         mock_login.side_effect = LoginException(
-            status_code=401, error_code=AuthError.INVALID_CREDENTIALS, message="invalid credentials",
+            AuthError.INVALID_CREDENTIALS, message="invalid credentials",
         )
         payload = LoginRequest(email="user@example.com", password="strongpass123")
         with self.assertRaises(LoginException) as ctx:

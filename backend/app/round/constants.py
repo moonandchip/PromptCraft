@@ -1,3 +1,7 @@
+from app.constants import ROUND_CHANNEL
+
+CHANNEL = ROUND_CHANNEL
+
 ROUTER_PREFIX = "/round"
 ROUTER_TAG = "round"
 
@@ -61,3 +65,4 @@ SUBMIT_ROUND_FEATURE = "submit_round"
 START_ROUND_FEATURE = "start_round"
 GET_ROUND_ATTEMPTS_FEATURE = "get_round_attempts"
 GET_ROUNDS_FEATURE = "get_rounds"
+GET_ROUND_HISTORY_FEATURE = "get_round_history"

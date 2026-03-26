@@ -4,6 +4,7 @@ from unittest.mock import MagicMock, patch
 from app.round.exceptions import RoundError, SubmitRoundException
 from app.round.service.generate_image import GenerationError
 from app.round.service.submit_round import submit_round
+from app.round.types.args import SubmitRoundArgs
 
 
 class TestSubmitRound(unittest.TestCase):
@@ -29,9 +30,7 @@ class TestSubmitRound(unittest.TestCase):
 
         response = submit_round(
             session=session,
-            user_email="test@example.com",
-            round_id="ancient-temple",
-            user_prompt="a majestic scene",
+            args=SubmitRoundArgs(user_email="test@example.com", round_id="ancient-temple", user_prompt="a majestic scene"),
         )
 
         self.assertEqual(response.generated_image_url, "https://example.com/generated.jpg")
@@ -54,9 +53,7 @@ class TestSubmitRound(unittest.TestCase):
         with self.assertRaises(SubmitRoundException) as ctx:
             submit_round(
                 session=MagicMock(),
-                user_email="test@example.com",
-                round_id="missing-round",
-                user_prompt="prompt",
+                args=SubmitRoundArgs(user_email="test@example.com", round_id="missing-round", user_prompt="prompt"),
             )
 
         self.assertEqual(ctx.exception.status_code, 404)
@@ -74,9 +71,7 @@ class TestSubmitRound(unittest.TestCase):
         with self.assertRaises(SubmitRoundException) as ctx:
             submit_round(
                 session=MagicMock(),
-                user_email="test@example.com",
-                round_id="ancient-temple",
-                user_prompt="prompt",
+                args=SubmitRoundArgs(user_email="test@example.com", round_id="ancient-temple", user_prompt="prompt"),
             )
 
         self.assertEqual(ctx.exception.status_code, 502)
@@ -104,9 +99,7 @@ class TestSubmitRound(unittest.TestCase):
 
         response = submit_round(
             session=session,
-            user_email="test@example.com",
-            round_id="ancient-temple",
-            user_prompt="prompt",
+            args=SubmitRoundArgs(user_email="test@example.com", round_id="ancient-temple", user_prompt="prompt"),
         )
 
         self.assertEqual(response.similarity_score, 0.0)
@@ -138,9 +131,7 @@ class TestSubmitRound(unittest.TestCase):
         with self.assertRaises(SubmitRoundException) as ctx:
             submit_round(
                 session=MagicMock(),
-                user_email="test@example.com",
-                round_id="ancient-temple",
-                user_prompt="prompt",
+                args=SubmitRoundArgs(user_email="test@example.com", round_id="ancient-temple", user_prompt="prompt"),
             )
 
         self.assertEqual(ctx.exception.status_code, 500)

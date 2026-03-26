@@ -1,8 +1,7 @@
-from dataclasses import dataclass
+from typing import TypedDict
 
 
-@dataclass(frozen=True)
-class AttemptLogAttributes:
+class AttemptLogAttributes(TypedDict):
     attempt_id: str
     user_id: str
     round_id: str
@@ -10,22 +9,19 @@ class AttemptLogAttributes:
     similarity_score: float
 
 
-@dataclass(frozen=True)
-class RoundUserLogAttributes:
+class RoundUserLogAttributes(TypedDict):
     user_id: str
     email: str
     role: str
 
 
-@dataclass(frozen=True)
-class PromptLogAttributes:
+class PromptLogAttributes(TypedDict):
     prompt_id: str
     user_id: str
     image_id: str
 
 
-@dataclass(frozen=True)
-class RoundImageLogAttributes:
+class RoundImageLogAttributes(TypedDict):
     image_id: str
     difficulty_level: int
     is_active: bool

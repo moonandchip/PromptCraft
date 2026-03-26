@@ -4,6 +4,7 @@ from unittest.mock import MagicMock, patch
 from app.auth.models import UserResponse
 from app.round.models import RoundStartResponse
 from app.round.exceptions import RoundError, StartRoundException
+from app.round.types.args import StartRoundArgs
 from app.response import ApiResponse
 from app.round.transport.start_endpoint import start_endpoint
 
@@ -23,12 +24,12 @@ class TestStartEndpoint(unittest.TestCase):
 
         self.assertIsInstance(response, ApiResponse)
         self.assertEqual(response.data, expected)
-        mock_start_round.assert_called_once_with(session=session, user_id="u1")
+        mock_start_round.assert_called_once_with(session=session, args=StartRoundArgs(user_id="u1"))
 
     @patch("app.round.transport.start_endpoint.start_round", autospec=True)
     def test_start_endpoint_maps_service_error_to_exception(self, mock_start_round):
         mock_start_round.side_effect = StartRoundException(
-            status_code=500, error_code=RoundError.SAVE_FAILED, message="Failed to start round",
+            RoundError.SAVE_FAILED, message="Failed to start round",
         )
         current_user = UserResponse(id="u1", email="user@example.com", name="User")
         session = MagicMock()

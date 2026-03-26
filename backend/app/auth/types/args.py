@@ -1,13 +1,13 @@
 from dataclasses import dataclass
 
 
-@dataclass(frozen=True)
+@dataclass
 class LoginArgs:
     email: str
     password: str
 
 
-@dataclass(frozen=True)
+@dataclass
 class RegisterArgs:
     email: str
     password: str
