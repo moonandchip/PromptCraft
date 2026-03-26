@@ -1,7 +1,7 @@
 """add missing attempt columns
 
 Revision ID: 777e92f9a12c
-Revises: 77bbb5a104a7
+Revises: e0736feb8889
 Create Date: 2026-03-25 19:03:18.507642
 
 """
@@ -10,8 +10,8 @@ from typing import Sequence, Union
 from alembic import op
 import sqlalchemy as sa
 
-revision: str = "NEW_REVISION_ID"
-down_revision: Union[str, Sequence[str], None] = "77bbb5a104a7"
+revision: str = "777e92f9a12c"
+down_revision: Union[str, Sequence[str], None] = "e0736feb8889"
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
