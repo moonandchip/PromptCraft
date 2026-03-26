@@ -80,15 +80,17 @@ export default function PracticePage() {
     setError(null);
 
     try {
-      const result = await submitPrompt(
-        { round_id: selectedRound.id, user_prompt: prompt.trim() },
-        getToken()
-      );
-      setGeneratedImageUrl(result.generated_image_url);
-      setSimilarityScore(result.similarity_score);
-    } catch (err) {
-      setError(err.message || "Something went wrong. Please try again.");
-    } finally {
+  const result = await submitPrompt(
+    { round_id: selectedRound.id, user_prompt: prompt.trim() },
+    getToken()
+  );
+
+  setGeneratedImageUrl(result.data.generated_image_url);
+  setSimilarityScore(Number(result.data.similarity_score));
+  
+} catch (err) {
+  setError(err.message || "Something went wrong");
+} finally {
       setIsLoading(false);
     }
   }
@@ -195,8 +197,8 @@ export default function PracticePage() {
         <div className={styles.scoreRow}>
           <span className={styles.scoreLabel}>Similarity Score:</span>
           <span className={`${styles.scorePill} ${styles.scorePillActive}`}>
-            {similarityScore === 0
-              ? "Scoring…"
+            {typeof similarityScore !== "number"
+              ? "Scoring..."
               : `${similarityScore.toFixed(1)} / 100`}
           </span>
         </div>
