@@ -1,7 +1,7 @@
-from fastapi import Depends, status
+from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
-from app.auth.exceptions import AuthError, ResolveTokenException
+from ..exceptions import AuthError, ResolveTokenException
 
 from ..constants import BEARER_SCHEME, ERR_MISSING_BEARER_TOKEN
 from ..models import UserResponse
@@ -18,8 +18,7 @@ def get_current_user(
 ) -> UserResponse:
     if credentials is None or credentials.scheme.lower() != BEARER_SCHEME:
         raise ResolveTokenException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            error_code=AuthError.INVALID_TOKEN,
+            AuthError.INVALID_TOKEN,
             message=ERR_MISSING_BEARER_TOKEN,
         )
 

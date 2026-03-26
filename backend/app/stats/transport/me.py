@@ -7,9 +7,9 @@ from app.auth.dependencies import get_current_user
 from app.auth.models import UserResponse
 from app.exceptions import AppException
 from app.response import ApiResponse
-from app.constants import STATS_CHANNEL
-from app.stats.constants import GET_STATS_FEATURE
-from app.stats.exceptions import GetStatsException, StatsError
+
+from ..constants import CHANNEL, GET_STATS_FEATURE
+from ..exceptions import GetStatsException, StatsError
 
 from ..models import StatsResponse
 from ..service import get_user_stats
@@ -28,10 +28,8 @@ def me_stats_endpoint(
     except AppException:
         raise
     except Exception as exc:
-        logger.exception(
+        logger.error(
             "Unexpected error in get_user_stats",
-            extra={"channel": STATS_CHANNEL, "feature": GET_STATS_FEATURE, "user": current_user.id},
+            extra={"channel": CHANNEL, "feature": GET_STATS_FEATURE, "error": str(exc), "user": current_user.id},
         )
-        raise GetStatsException(
-            status_code=500, error_code=StatsError.UNKNOWN_ERROR, message="An unexpected error occurred",
-        ) from exc
+        raise GetStatsException(StatsError.UNKNOWN_ERROR) from exc

@@ -4,9 +4,9 @@ from fastapi import Depends
 
 from app.exceptions import AppException
 from app.response import ApiResponse
-from app.constants import AUTH_CHANNEL
-from app.auth.constants import LOGIN_FEATURE
-from app.auth.exceptions import AuthError, LoginException
+
+from ..constants import CHANNEL, LOGIN_FEATURE
+from ..exceptions import AuthError, LoginException
 
 from ..models import LoginRequest, TokenResponse
 from ..service.login import login
@@ -26,10 +26,8 @@ def login_endpoint(
     except AppException:
         raise
     except Exception as exc:
-        logger.exception(
+        logger.error(
             "Unexpected error in login",
-            extra={"channel": AUTH_CHANNEL, "feature": LOGIN_FEATURE, "user": payload.email},
+            extra={"channel": CHANNEL, "feature": LOGIN_FEATURE, "error": str(exc), "user": payload.email},
         )
-        raise LoginException(
-            status_code=500, error_code=AuthError.UNKNOWN_ERROR, message="An unexpected error occurred",
-        ) from exc
+        raise LoginException(AuthError.UNKNOWN_ERROR) from exc

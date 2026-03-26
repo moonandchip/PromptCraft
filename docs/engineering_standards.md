@@ -48,26 +48,21 @@ backend/
 │   ├── config.py                     # Settings via pydantic-settings
 │   ├── db.py                         # SQLAlchemy engine & session factory
 │   ├── constants.py                  # App-wide logging channels
-│   │
-│   ├── exceptions/
-│   │   └── base.py                   # BaseErrorCodeEnum + AppException hierarchy
+│   ├── exceptions.py                 # BaseErrorCodeEnum + AppException hierarchy
+│   ├── response.py                   # ApiResponse[T] generic envelope
 │   │
 │   ├── auth/                         # Auth domain
-│   │   ├── constants.py
+│   │   ├── constants.py              # CHANNEL re-export + feature name constants
+│   │   ├── exceptions.py             # AuthError enum + typed exception classes
 │   │   ├── models.py                 # Pydantic request/response schemas
-│   │   ├── domain/
-│   │   │   ├── constants.py          # AUTH_CHANNEL, feature name constants
-│   │   │   ├── exceptions.py         # AuthError enum + typed exception classes
-│   │   │   └── types/
-│   │   │       ├── args.py           # LoginArgs, RegisterArgs dataclasses
-│   │   │       └── log_attributes.py # AuthLogAttributes TypedDict
+│   │   ├── types/
+│   │   │   └── args.py               # LoginArgs, RegisterArgs dataclasses
 │   │   ├── data/                     # Layer 3: External auth service HTTP calls
 │   │   │   ├── get_internal_me.py
 │   │   │   ├── post_internal_login.py
 │   │   │   ├── post_register.py
 │   │   │   └── request_auth_service.py
 │   │   ├── service/                  # Layer 2: Business logic
-│   │   │   ├── auth_service.py
 │   │   │   ├── login.py
 │   │   │   ├── register_user.py
 │   │   │   ├── resolve_user_from_token.py
@@ -82,14 +77,12 @@ backend/
 │   │       └── get_current_user.py
 │   │
 │   ├── round/                        # Round domain
-│   │   ├── constants.py
+│   │   ├── constants.py              # CHANNEL re-export + feature name constants
+│   │   ├── exceptions.py             # RoundError enum + typed exception classes
 │   │   ├── models.py                 # Pydantic request/response schemas
-│   │   ├── domain/
-│   │   │   ├── constants.py          # ROUND_CHANNEL, feature name constants
-│   │   │   ├── exceptions.py         # RoundError enum + typed exception classes
-│   │   │   └── types/
-│   │   │       ├── args.py           # SubmitRoundArgs, StartRoundArgs dataclasses
-│   │   │       └── log_attributes.py # RoundLogAttributes, AttemptLogAttributes TypedDicts
+│   │   ├── types/
+│   │   │   ├── args.py               # SubmitRoundArgs, StartRoundArgs dataclasses
+│   │   │   └── log_attributes.py     # AttemptLogAttributes, RoundUserLogAttributes TypedDicts
 │   │   ├── data/                     # Layer 3: DB access
 │   │   │   ├── entities.py           # SQLAlchemy ORM models
 │   │   │   ├── get_attempts_by_round_id.py
@@ -106,7 +99,7 @@ backend/
 │   │   │   ├── get_round_by_id.py
 │   │   │   ├── get_rounds.py
 │   │   │   ├── get_round_attempts.py
-│   │   │   ├── errors.py
+│   │   │   ├── get_round_history.py
 │   │   │   ├── clip_scoring.py
 │   │   │   └── generate_image.py
 │   │   └── transport/                # Layer 1: HTTP endpoints
@@ -115,18 +108,17 @@ backend/
 │   │       ├── start_endpoint.py
 │   │       ├── get_rounds_endpoint.py
 │   │       ├── get_round_attempts_endpoint.py
+│   │       ├── get_round_history_endpoint.py
 │   │       └── get_db_session.py
 │   │
 │   ├── stats/                        # Stats domain
+│   │   ├── constants.py              # CHANNEL re-export + feature name constants
+│   │   ├── exceptions.py             # StatsError enum + typed exception classes
 │   │   ├── models.py
-│   │   ├── domain/
-│   │   │   ├── constants.py
-│   │   │   ├── exceptions.py
-│   │   │   └── types/
-│   │   │       └── log_attributes.py
 │   │   ├── data/
 │   │   │   ├── entities.py
-│   │   │   └── get_rounds_aggregates_by_user_id.py
+│   │   │   ├── get_rounds_aggregates_by_user_id.py
+│   │   │   └── get_user_stats_from_attempts.py
 │   │   ├── service/
 │   │   │   └── get_user_stats.py
 │   │   └── transport/
@@ -302,7 +294,7 @@ AI_CHANNEL      = 'promptcraft.ai'
 Each domain folder contains a `constants.py` that defines the feature name strings used in structured logs for that domain. Feature names follow the pattern `VERB_ENTITY_FEATURE_NAME` and are always imported — never typed inline.
 
 ```python
-# app/round/domain/constants.py
+# app/round/constants.py
 from app.constants import ROUND_CHANNEL
 
 CHANNEL = ROUND_CHANNEL
@@ -313,6 +305,7 @@ START_ROUND_FEATURE           = 'start_round'
 GET_ROUND_FEATURE             = 'get_round'
 GET_ROUNDS_FEATURE            = 'get_rounds'
 GET_ROUND_ATTEMPTS_FEATURE    = 'get_round_attempts'
+GET_ROUND_HISTORY_FEATURE     = 'get_round_history'
 ```
 
 > **Why This Matters**
@@ -340,7 +333,7 @@ Transport catches Exception              →  logs + returns 500 with UNKNOWN_ER
 All application exceptions inherit from `AppException`. `BaseErrorCodeEnum` is the parent of every domain error enum and ensures every error has a string `code` attribute.
 
 ```python
-# app/exceptions/base.py
+# app/exceptions.py
 from enum import Enum
 
 class BaseErrorCodeEnum(str, Enum):
@@ -350,10 +343,11 @@ class BaseErrorCodeEnum(str, Enum):
 
 class AppException(Exception):
     """Base for all typed application exceptions."""
-    def __init__(self, error: BaseErrorCodeEnum, status_code: int = 500) -> None:
+    def __init__(self, error: BaseErrorCodeEnum, status_code: int = 500, message: str | None = None) -> None:
         self.error       = error
         self.status_code = status_code
-        super().__init__(str(error.value))
+        self.message     = message or str(error.value)
+        super().__init__(self.message)
 ```
 
 ### 5.3 Domain Error Enums & Exception Classes
@@ -361,8 +355,8 @@ class AppException(Exception):
 Every domain defines its own error enum and a set of exception classes — one per operation. This gives each failure a stable, searchable code and a clear origin.
 
 ```python
-# app/round/domain/exceptions.py
-from app.exceptions.base import BaseErrorCodeEnum, AppException
+# app/round/exceptions.py
+from app.exceptions import BaseErrorCodeEnum, AppException
 
 class RoundError(BaseErrorCodeEnum):
     UNKNOWN_ERROR       = 'UNKNOWN_ERROR'
@@ -374,7 +368,7 @@ class RoundError(BaseErrorCodeEnum):
 
 # One exception class per service operation
 class SubmitRoundException(AppException):
-    def __init__(self, error: RoundError = RoundError.UNKNOWN_ERROR) -> None:
+    def __init__(self, error: RoundError = RoundError.UNKNOWN_ERROR, message: str | None = None) -> None:
         status_map = {
             RoundError.NOT_FOUND: 404,
             RoundError.GENERATION_FAILED: 502,
@@ -382,22 +376,25 @@ class SubmitRoundException(AppException):
             RoundError.NO_API_KEY: 500,
             RoundError.SAVE_FAILED: 500,
         }
-        super().__init__(error, status_map.get(error, 500))
+        super().__init__(error, status_map.get(error, 500), message)
 
 class StartRoundException(AppException):
-    def __init__(self, error: RoundError = RoundError.UNKNOWN_ERROR) -> None:
-        status = 404 if error == RoundError.NOT_FOUND else 500
-        super().__init__(error, status)
+    def __init__(self, error: RoundError = RoundError.UNKNOWN_ERROR, message: str | None = None) -> None:
+        status_map = {
+            RoundError.NOT_FOUND: 404,
+            RoundError.SAVE_FAILED: 500,
+        }
+        super().__init__(error, status_map.get(error, 500), message)
 
 class GetRoundAttemptsException(AppException):
-    def __init__(self, error: RoundError = RoundError.UNKNOWN_ERROR) -> None:
+    def __init__(self, error: RoundError = RoundError.UNKNOWN_ERROR, message: str | None = None) -> None:
         status = 404 if error == RoundError.NOT_FOUND else 500
-        super().__init__(error, status)
+        super().__init__(error, status, message)
 ```
 
 ```python
-# app/auth/domain/exceptions.py
-from app.exceptions.base import BaseErrorCodeEnum, AppException
+# app/auth/exceptions.py
+from app.exceptions import BaseErrorCodeEnum, AppException
 
 class AuthError(BaseErrorCodeEnum):
     UNKNOWN_ERROR       = 'UNKNOWN_ERROR'
@@ -406,17 +403,20 @@ class AuthError(BaseErrorCodeEnum):
     INVALID_TOKEN       = 'AUTH_INVALID_TOKEN'
 
 class LoginException(AppException):
-    def __init__(self, error: AuthError = AuthError.UNKNOWN_ERROR) -> None:
+    def __init__(self, error: AuthError = AuthError.UNKNOWN_ERROR, message: str | None = None) -> None:
         status_map = {
             AuthError.INVALID_CREDENTIALS: 401,
             AuthError.SERVICE_UNAVAILABLE: 503,
         }
-        super().__init__(error, status_map.get(error, 500))
+        super().__init__(error, status_map.get(error, 500), message)
 
 class RegisterException(AppException):
-    def __init__(self, error: AuthError = AuthError.UNKNOWN_ERROR) -> None:
-        status = 503 if error == AuthError.SERVICE_UNAVAILABLE else 500
-        super().__init__(error, status)
+    def __init__(self, error: AuthError = AuthError.UNKNOWN_ERROR, message: str | None = None) -> None:
+        status_map = {
+            AuthError.INVALID_CREDENTIALS: 409,
+            AuthError.SERVICE_UNAVAILABLE: 503,
+        }
+        super().__init__(error, status_map.get(error, 500), message)
 ```
 
 ### 5.4 Global Exception Handler
@@ -443,36 +443,36 @@ Every route handler follows the same three-block pattern: happy path, domain exc
 
 ```python
 # app/round/transport/submit_endpoint.py
-@router.post('/submit', response_model=ApiResponse[RoundSubmitResponse], status_code=200)
+from ..constants import CHANNEL, SUBMIT_ROUND_FEATURE
+from ..types.args import SubmitRoundArgs
+
 def submit_endpoint(
     body:         RoundSubmitRequest,
     current_user: UserResponse = Depends(get_current_user),
     session:      Session      = Depends(get_db_session),
-):
+) -> ApiResponse[RoundSubmitResponse]:
     try:
-        result = submit_round(
-            session=session,
-            args=SubmitRoundArgs(
-                user_email=current_user.email,
-                round_id=body.round_id,
-                user_prompt=body.user_prompt,
-            ),
+        args = SubmitRoundArgs(
+            user_email=current_user.email,
+            round_id=body.round_id,
+            user_prompt=body.user_prompt,
         )
-        return ApiResponse(data=result, error=None, message=None)
+        result = submit_round(session=session, args=args)
+        return ApiResponse(data=result)
 
-    except SubmitRoundException:
+    except AppException:
         raise  # Already typed — global handler takes over
 
-    except Exception as e:
+    except Exception as exc:
         logger.error(
             "Unexpected error in submit_round",
             extra={
                 "channel": CHANNEL,
                 "feature": SUBMIT_ROUND_FEATURE,
-                "error":   str(e),
+                "error":   str(exc),
             }
         )
-        raise SubmitRoundException(RoundError.UNKNOWN_ERROR) from e
+        raise SubmitRoundException(RoundError.UNKNOWN_ERROR) from exc
 ```
 
 ### 5.6 Layer Responsibilities
@@ -540,8 +540,8 @@ Every service function logs two events: one on success and one on error. The unk
 ```python
 # app/round/service/submit_round.py
 import logging
-from app.round.domain.constants import CHANNEL, SUBMIT_ROUND_FEATURE
-from app.round.domain.exceptions import SubmitRoundException, RoundError
+from ..constants import CHANNEL, SUBMIT_ROUND_FEATURE
+from ..exceptions import SubmitRoundException, RoundError
 
 logger = logging.getLogger(__name__)
 
@@ -554,7 +554,7 @@ def submit_round(session: Session, args: SubmitRoundArgs) -> RoundSubmitResponse
             extra={
                 "channel": CHANNEL,
                 "feature": SUBMIT_ROUND_FEATURE,
-                "user":    {"email": args.user_email},
+                "user":    args.user_email,
                 "attempt": attempt.log_attributes,
             }
         )
@@ -563,17 +563,17 @@ def submit_round(session: Session, args: SubmitRoundArgs) -> RoundSubmitResponse
     except SubmitRoundException:
         raise
 
-    except Exception as e:
+    except Exception as exc:
         logger.error(
             "Unexpected error submitting round",
             extra={
                 "channel": CHANNEL,
                 "feature": SUBMIT_ROUND_FEATURE,
-                "user":    {"email": args.user_email},
-                "error":   str(e),
+                "user":    args.user_email,
+                "error":   str(exc),
             }
         )
-        raise SubmitRoundException(RoundError.UNKNOWN_ERROR) from e
+        raise SubmitRoundException(RoundError.UNKNOWN_ERROR) from exc
 ```
 
 ### 6.3 `log_attributes` on Models
@@ -581,7 +581,7 @@ def submit_round(session: Session, args: SubmitRoundArgs) -> RoundSubmitResponse
 Every SQLAlchemy model exposes a `log_attributes` property that returns a typed dict of the fields relevant for logging. This is the only way entity data enters a log entry — never build ad-hoc dicts inline at the log call site.
 
 ```python
-# app/round/domain/types/log_attributes.py
+# app/round/types/log_attributes.py
 from typing import TypedDict
 
 class AttemptLogAttributes(TypedDict):
@@ -598,7 +598,7 @@ class RoundUserLogAttributes(TypedDict):
 
 ```python
 # app/round/data/entities.py
-from app.round.domain.types.log_attributes import AttemptLogAttributes
+from app.round.types.log_attributes import AttemptLogAttributes
 
 class Attempt(Base):
     __tablename__ = 'attempts'
@@ -627,7 +627,7 @@ class Attempt(Base):
 Service and data functions accept `*Args` dataclasses rather than raw keyword arguments. This creates an explicit, typed contract at every layer boundary and makes it easy to trace what data flows into an operation.
 
 ```python
-# app/round/domain/types/args.py
+# app/round/types/args.py
 from dataclasses import dataclass
 
 @dataclass
@@ -638,7 +638,7 @@ class SubmitRoundArgs:
 
 @dataclass
 class StartRoundArgs:
-    user_email: str
+    user_id: str
 ```
 
 ```python
@@ -803,8 +803,8 @@ class BaseScoringAdapter(ABC):
 ```python
 # adapters/leonardo_adapter.py
 from app.adapters.base_ai_adapter import BaseImageGenerationAdapter
-from app.exceptions.base import AppException
-from app.round.domain.exceptions import RoundError
+from app.exceptions import AppException
+from app.round.exceptions import RoundError
 
 class LeonardoAdapter(BaseImageGenerationAdapter):
     def __init__(self, api_key: str) -> None:
@@ -875,7 +875,7 @@ Transport tests mock the entire service layer. They verify that: the endpoint ca
 # tests/unit/round/transport/test_submit_endpoint.py
 import pytest
 from unittest.mock import MagicMock, patch
-from app.round.domain.exceptions import SubmitRoundException, RoundError
+from app.round.exceptions import SubmitRoundException, RoundError
 
 class TestSubmitEndpoint:
 
@@ -917,8 +917,8 @@ Service tests mock the data layer and adapters. They verify business logic: argu
 import pytest
 from unittest.mock import MagicMock, patch
 from app.round.service.submit_round import submit_round
-from app.round.domain.exceptions import SubmitRoundException, RoundError
-from app.round.domain.types.args import SubmitRoundArgs
+from app.round.exceptions import SubmitRoundException, RoundError
+from app.round.types.args import SubmitRoundArgs
 
 class TestSubmitRound:
 

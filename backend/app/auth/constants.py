@@ -1,3 +1,7 @@
+from app.constants import AUTH_CHANNEL
+
+CHANNEL = AUTH_CHANNEL
+
 AUTH_SERVICE_URL_ENV_VAR = "AUTH_SERVICE_URL"
 DEFAULT_AUTH_SERVICE_URL = "http://localhost:3000"
 

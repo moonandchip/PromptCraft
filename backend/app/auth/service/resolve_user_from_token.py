@@ -1,4 +1,4 @@
-from app.auth.exceptions import AuthError, ResolveTokenException
+from ..exceptions import AuthError, ResolveTokenException
 
 from ..constants import ERR_INVALID_AUTH_ME_RESPONSE
 from ..data.get_internal_me import get_internal_me
@@ -17,12 +17,12 @@ def resolve_user_from_token(token: str, config: AuthServiceConfig) -> UserRespon
         )
     except AuthServiceError as exc:
         raise ResolveTokenException(
-            status_code=exc.status_code, error_code=AuthError.INVALID_TOKEN, message=exc.detail,
+            AuthError.INVALID_TOKEN, message=exc.detail,
         ) from exc
 
     try:
         return extract_user_from_response(response, ERR_INVALID_AUTH_ME_RESPONSE)
     except AuthServiceError as exc:
         raise ResolveTokenException(
-            status_code=exc.status_code, error_code=AuthError.SERVICE_UNAVAILABLE, message=exc.detail,
+            AuthError.SERVICE_UNAVAILABLE, message=exc.detail,
         ) from exc

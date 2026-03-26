@@ -23,7 +23,7 @@ class TestRegisterTransportFunction(unittest.TestCase):
     def test_register_maps_error(self, mock_register_user):
         config = AuthServiceConfig(base_url="http://auth.test", timeout_seconds=10.0)
         mock_register_user.side_effect = RegisterException(
-            status_code=409, error_code=AuthError.INVALID_CREDENTIALS, message="email exists",
+            AuthError.INVALID_CREDENTIALS, message="email exists",
         )
         payload = RegisterRequest(email="user@example.com", password="strongpass123", name="User")
         with self.assertRaises(RegisterException) as exc:

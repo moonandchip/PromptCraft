@@ -3,6 +3,7 @@ from unittest.mock import MagicMock, patch
 
 from app.round.exceptions import RoundError, StartRoundException
 from app.round.service.start_round import start_round
+from app.round.types.args import StartRoundArgs
 
 
 class TestStartRound(unittest.TestCase):
@@ -15,7 +16,7 @@ class TestStartRound(unittest.TestCase):
         }
         session = MagicMock()
 
-        response = start_round(session=session, user_id="u1")
+        response = start_round(session=session, args=StartRoundArgs(user_id="u1"))
 
         self.assertEqual(response.round_id, "golden-sunset")
         self.assertEqual(response.target_image_url, "/static/golden-sunset.jpeg")
@@ -37,7 +38,7 @@ class TestStartRound(unittest.TestCase):
         session = MagicMock()
 
         with self.assertRaises(StartRoundException) as ctx:
-            start_round(session=session, user_id="u1")
+            start_round(session=session, args=StartRoundArgs(user_id="u1"))
 
         self.assertEqual(ctx.exception.status_code, 500)
         self.assertEqual(ctx.exception.message, "Failed to start round")

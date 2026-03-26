@@ -2,15 +2,16 @@ from enum import Enum
 
 
 class BaseErrorCodeEnum(str, Enum):
-    """Base class for domain-specific error code enums."""
+    """Parent of all domain error enums. Inheriting from str
+    makes values JSON-serialisable without extra conversion."""
     pass
 
 
 class AppException(Exception):
-    """Base application exception carrying a typed error code and HTTP status."""
+    """Base for all typed application exceptions."""
 
-    def __init__(self, status_code: int, error_code: BaseErrorCodeEnum, message: str) -> None:
-        super().__init__(message)
+    def __init__(self, error: BaseErrorCodeEnum, status_code: int = 500, message: str | None = None) -> None:
+        self.error = error
         self.status_code = status_code
-        self.error_code = error_code
-        self.message = message
+        self.message = message or str(error.value)
+        super().__init__(self.message)

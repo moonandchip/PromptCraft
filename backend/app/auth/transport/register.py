@@ -4,9 +4,9 @@ from fastapi import Depends
 
 from app.exceptions import AppException
 from app.response import ApiResponse
-from app.constants import AUTH_CHANNEL
-from app.auth.constants import REGISTER_FEATURE
-from app.auth.exceptions import AuthError, RegisterException
+
+from ..constants import CHANNEL, REGISTER_FEATURE
+from ..exceptions import AuthError, RegisterException
 
 from ..models import RegisterRequest, UserResponse
 from ..service.register_user import register_user
@@ -26,10 +26,8 @@ def register_endpoint(
     except AppException:
         raise
     except Exception as exc:
-        logger.exception(
+        logger.error(
             "Unexpected error in register",
-            extra={"channel": AUTH_CHANNEL, "feature": REGISTER_FEATURE, "user": payload.email},
+            extra={"channel": CHANNEL, "feature": REGISTER_FEATURE, "error": str(exc), "user": payload.email},
         )
-        raise RegisterException(
-            status_code=500, error_code=AuthError.UNKNOWN_ERROR, message="An unexpected error occurred",
-        ) from exc
+        raise RegisterException(AuthError.UNKNOWN_ERROR) from exc

@@ -7,8 +7,8 @@ from app.auth.dependencies import get_current_user
 from app.auth.models import UserResponse
 from app.exceptions import AppException
 from app.response import ApiResponse
-from app.constants import ROUND_CHANNEL
-from app.round.exceptions import RoundError, GetRoundAttemptsException
+from ..constants import CHANNEL, GET_ROUND_HISTORY_FEATURE
+from app.round.exceptions import RoundError, GetRoundHistoryException
 
 from ..models import RoundHistoryResponse
 from ..service import get_round_history
@@ -27,10 +27,8 @@ def get_round_history_endpoint(
     except AppException:
         raise
     except Exception as exc:
-        logger.exception(
+        logger.error(
             "Unexpected error in get_round_history",
-            extra={"channel": ROUND_CHANNEL, "feature": "get_round_history", "user": current_user.id},
+            extra={"channel": CHANNEL, "feature": GET_ROUND_HISTORY_FEATURE, "error": str(exc), "user": current_user.id},
         )
-        raise GetRoundAttemptsException(
-            status_code=500, error_code=RoundError.UNKNOWN_ERROR, message="An unexpected error occurred",
-        ) from exc
+        raise GetRoundHistoryException(RoundError.UNKNOWN_ERROR) from exc
