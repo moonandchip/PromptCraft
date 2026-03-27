@@ -13,13 +13,14 @@ import app.stats.data.entities
 # access to the values within the .ini file in use.
 config = context.config
 
-# Override sqlalchemy.url from DATABASE_URL environment variable
+# Override sqlalchemy.url from DATABASE_URL environment variable,
+# reusing the same normalization logic as app.db
+from app.db import _normalize_database_url, _strip_schema_query
+
 database_url = os.getenv("DATABASE_URL", "")
 if database_url:
-    if database_url.startswith("postgres://"):
-        database_url = database_url.replace("postgres://", "postgresql+psycopg://", 1)
-    elif database_url.startswith("postgresql://"):
-        database_url = database_url.replace("postgresql://", "postgresql+psycopg://", 1)
+    database_url = _normalize_database_url(database_url)
+    database_url, _ = _strip_schema_query(database_url)
     config.set_main_option("sqlalchemy.url", database_url)
 
 # Interpret the config file for Python logging.

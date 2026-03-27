@@ -68,7 +68,7 @@ def upgrade() -> None:
     )
     op.create_index(op.f('ix_users_email'), 'users', ['email'], unique=True)
     op.create_table('rounds',
-    sa.Column('id', sa.String(), nullable=False),
+    sa.Column('id', sa.Uuid(), nullable=False),
     sa.Column('user_id', sa.String(), nullable=False),
     sa.Column('score', sa.Float(), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
