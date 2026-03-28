@@ -7,19 +7,26 @@ from app.round.types.args import StartRoundArgs
 
 
 class TestStartRound(unittest.TestCase):
+    @patch("app.round.service.start_round.upsert_user_profile", autospec=True)
     @patch("app.round.service.start_round.save_round_start", autospec=True)
     @patch("app.round.service.start_round.choice", autospec=True)
-    def test_start_round_returns_selected_round_payload(self, mock_choice, mock_save_round_start):
+    def test_start_round_returns_selected_round_payload(self, mock_choice, mock_save_round_start, mock_upsert_user_profile):
         mock_choice.return_value = {
             "id": "golden-sunset",
             "reference_image": "golden-sunset.jpeg",
         }
         session = MagicMock()
 
-        response = start_round(session=session, args=StartRoundArgs(user_id="u1"))
+        response = start_round(session=session, args=StartRoundArgs(user_id="u1", user_email="user@example.com"))
 
         self.assertEqual(response.round_id, "golden-sunset")
         self.assertEqual(response.target_image_url, "/static/golden-sunset.jpeg")
+        mock_upsert_user_profile.assert_called_once_with(
+            session,
+            user_id="u1",
+            email="user@example.com",
+            display_name=None,
+        )
         mock_save_round_start.assert_called_once_with(
             session=session,
             user_id="u1",
@@ -27,9 +34,10 @@ class TestStartRound(unittest.TestCase):
             target_image_url="/static/golden-sunset.jpeg",
         )
 
+    @patch("app.round.service.start_round.upsert_user_profile", autospec=True)
     @patch("app.round.service.start_round.save_round_start", autospec=True)
     @patch("app.round.service.start_round.choice", autospec=True)
-    def test_start_round_maps_persistence_failure(self, mock_choice, mock_save_round_start):
+    def test_start_round_maps_persistence_failure(self, mock_choice, mock_save_round_start, mock_upsert_user_profile):
         mock_choice.return_value = {
             "id": "golden-sunset",
             "reference_image": "golden-sunset.jpeg",
@@ -38,7 +46,7 @@ class TestStartRound(unittest.TestCase):
         session = MagicMock()
 
         with self.assertRaises(StartRoundException) as ctx:
-            start_round(session=session, args=StartRoundArgs(user_id="u1"))
+            start_round(session=session, args=StartRoundArgs(user_id="u1", user_email="user@example.com"))
 
         self.assertEqual(ctx.exception.status_code, 500)
         self.assertEqual(ctx.exception.message, "Failed to start round")

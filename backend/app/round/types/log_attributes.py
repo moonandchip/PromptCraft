@@ -9,10 +9,10 @@ class AttemptLogAttributes(TypedDict):
     similarity_score: float
 
 
-class RoundUserLogAttributes(TypedDict):
+class UserProfileLogAttributes(TypedDict):
     user_id: str
     email: str
-    role: str
+    display_name: str | None
 
 
 class PromptLogAttributes(TypedDict):

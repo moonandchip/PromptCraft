@@ -11,7 +11,7 @@ from app.response import ApiResponse
 from app.round.transport.get_rounds_endpoint import get_rounds_endpoint
 from app.round.transport.submit_endpoint import submit_endpoint
 
-_MOCK_USER = UserResponse(id="user-uuid-1234", email="test@example.com")
+_MOCK_USER = UserResponse(id="user-uuid-1234", email="test@example.com", name="User")
 
 
 class TestGetRoundsEndpoint(unittest.TestCase):
@@ -48,7 +48,7 @@ class TestSubmitEndpoint(unittest.TestCase):
         self.assertEqual(response.data, expected)
         mock_submit_round.assert_called_once_with(
             session=session,
-            args=SubmitRoundArgs(user_email="test@example.com", round_id="ancient-temple", user_prompt="a majestic scene"),
+            args=SubmitRoundArgs(user_id="user-uuid-1234", user_email="test@example.com", round_id="ancient-temple", user_prompt="a majestic scene", user_display_name="User"),
         )
 
     @patch("app.round.transport.submit_endpoint.submit_round", autospec=True)

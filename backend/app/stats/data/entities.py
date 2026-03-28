@@ -23,7 +23,7 @@ class Round(Base):
     __tablename__ = "rounds"
 
     id: Mapped[str] = mapped_column(Uuid(as_uuid=False), primary_key=True, default=lambda: str(uuid4()))
-    user_id: Mapped[str] = mapped_column(String, ForeignKey("users.id"), nullable=False, index=True)
+    user_id: Mapped[str] = mapped_column(String, ForeignKey("user_profiles.id"), nullable=False, index=True)
     score: Mapped[float] = mapped_column(nullable=False)
     round_id: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
     target_image_url: Mapped[str | None] = mapped_column(String, nullable=True)
