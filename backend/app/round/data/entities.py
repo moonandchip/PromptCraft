@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from sqlalchemy import DateTime, Float, Integer, String
+from sqlalchemy import DateTime, Float, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db import Base
@@ -50,7 +50,7 @@ class Prompt(Base):
     __tablename__ = "prompts"
 
     id: Mapped[str] = mapped_column(String, primary_key=True)
-    user_id: Mapped[str] = mapped_column(String, nullable=False, index=True)
+    user_id: Mapped[str] = mapped_column(String, ForeignKey("user_profiles.id"), nullable=False, index=True)
     image_id: Mapped[str] = mapped_column(String, nullable=False, index=True)
     prompt_text: Mapped[str] = mapped_column(String, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=_utc_now)
@@ -64,7 +64,7 @@ class Attempt(Base):
     __tablename__ = "attempts"
 
     id: Mapped[str] = mapped_column(String, primary_key=True)
-    user_id: Mapped[str] = mapped_column(String, nullable=False, index=True)
+    user_id: Mapped[str] = mapped_column(String, ForeignKey("user_profiles.id"), nullable=False, index=True)
     image_id: Mapped[str] = mapped_column(String, nullable=False, index=True)
     prompt_id: Mapped[str] = mapped_column(String, nullable=False, index=True)
     round_id: Mapped[str] = mapped_column(String, nullable=False, index=True)
