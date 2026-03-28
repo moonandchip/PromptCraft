@@ -7,6 +7,7 @@ from ..constants import CHANNEL, SUBMIT_ROUND_FEATURE
 from app.round.exceptions import RoundError, SubmitRoundException
 
 from ..data import save_submission
+from ..data.upsert_user_profile import upsert_user_profile
 from ..models import RoundSubmitResponse
 from ..types.args import SubmitRoundArgs
 from .get_round_by_id import get_round_by_id
@@ -47,9 +48,10 @@ def submit_round(session: Session, args: SubmitRoundArgs) -> RoundSubmitResponse
         )
 
     try:
+        upsert_user_profile(session, user_id=args.user_id, email=args.user_email, display_name=args.user_display_name)
         save_submission(
             session=session,
-            user_email=args.user_email,
+            user_id=args.user_id,
             reference_image=matched_round["reference_image"],
             difficulty=matched_round["difficulty"],
             prompt_text=args.user_prompt,

@@ -23,7 +23,7 @@ def start_endpoint(
     session: Session = Depends(get_db_session),
 ) -> ApiResponse[RoundStartResponse]:
     try:
-        args = StartRoundArgs(user_id=current_user.id)
+        args = StartRoundArgs(user_id=current_user.id, user_email=current_user.email, user_display_name=current_user.name)
         result = start_round(session=session, args=args)
         return ApiResponse(data=result)
     except AppException:

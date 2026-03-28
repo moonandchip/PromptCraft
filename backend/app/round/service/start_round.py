@@ -7,6 +7,7 @@ from ..constants import CHANNEL, START_ROUND_FEATURE, ROUNDS
 from app.round.exceptions import RoundError, StartRoundException
 
 from ..data import save_round_start
+from ..data.upsert_user_profile import upsert_user_profile
 from ..models import RoundStartResponse
 from ..types.args import StartRoundArgs
 
@@ -18,6 +19,7 @@ def start_round(session: Session, args: StartRoundArgs) -> RoundStartResponse:
     target_image_url = f"/static/{selected_round['reference_image']}"
 
     try:
+        upsert_user_profile(session, user_id=args.user_id, email=args.user_email, display_name=args.user_display_name)
         save_round_start(
             session=session,
             user_id=args.user_id,
