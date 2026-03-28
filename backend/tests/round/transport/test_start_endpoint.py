@@ -24,7 +24,7 @@ class TestStartEndpoint(unittest.TestCase):
 
         self.assertIsInstance(response, ApiResponse)
         self.assertEqual(response.data, expected)
-        mock_start_round.assert_called_once_with(session=session, args=StartRoundArgs(user_id="u1"))
+        mock_start_round.assert_called_once_with(session=session, args=StartRoundArgs(user_id="u1", user_email="user@example.com", user_display_name="User"))
 
     @patch("app.round.transport.start_endpoint.start_round", autospec=True)
     def test_start_endpoint_maps_service_error_to_exception(self, mock_start_round):

@@ -24,7 +24,7 @@ def submit_endpoint(
     session: Session = Depends(get_db_session),
 ) -> ApiResponse[RoundSubmitResponse]:
     try:
-        args = SubmitRoundArgs(user_email=current_user.email, round_id=body.round_id, user_prompt=body.user_prompt)
+        args = SubmitRoundArgs(user_id=current_user.id, user_email=current_user.email, round_id=body.round_id, user_prompt=body.user_prompt, user_display_name=current_user.name)
         result = submit_round(session=session, args=args)
         return ApiResponse(data=result)
     except AppException:

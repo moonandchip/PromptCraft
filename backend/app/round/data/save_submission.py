@@ -1,14 +1,13 @@
 from sqlalchemy.orm import Session
 
 from .get_or_create_image import get_or_create_image
-from .get_or_create_user import get_or_create_user
 from .save_attempt import save_attempt
 from .save_prompt import save_prompt
 
 
 def save_submission(
     session: Session,
-    user_email: str,
+    user_id: str,
     reference_image: str,
     difficulty: str,
     prompt_text: str,
@@ -20,7 +19,7 @@ def save_submission(
 
     Args:
         session: The SQLAlchemy session used for data access.
-        user_email: The email address of the authenticated user.
+        user_id: The authenticated user's ID from the auth service.
         reference_image: The reference image filename for the selected round.
         difficulty: The textual difficulty of the selected round.
         prompt_text: The user prompt text submitted for the round.
@@ -34,7 +33,6 @@ def save_submission(
     Raises:
         Exception: Propagates database errors raised during persistence.
     """
-    user_id = get_or_create_user(session=session, email=user_email)
     image_id = get_or_create_image(
         session=session,
         reference_image=reference_image,
