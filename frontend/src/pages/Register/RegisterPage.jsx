@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { register } from "../../auth";
 import styles from "./RegisterPage.module.css";
+import ErrorBanner from "../../components/ErrorBanner";
 
 export default function RegisterPage() {
   const [email, setEmail] = useState("");
@@ -23,7 +24,7 @@ export default function RegisterPage() {
       await register(email, password);
       setSuccess(true);
     } catch (err) {
-      setError(err.message);
+      setError(err.message || "Registration failed.");
     } finally {
       setLoading(false);
     }
@@ -34,7 +35,7 @@ export default function RegisterPage() {
     if (success) {
       const timer = setTimeout(() => {
         navigate("/login");
-      }, 1000); // Wait 1 second so user sees success message
+      }, 1000);
       return () => clearTimeout(timer);
     }
   }, [success, navigate]);
@@ -43,6 +44,9 @@ export default function RegisterPage() {
     <div className={styles.container}>
       <div className={styles.card}>
         <h1 className={styles.title}>Create Account</h1>
+
+        {/* Error Banner */}
+        <ErrorBanner message={error} onClose={() => setError(null)} />
 
         <form onSubmit={handleSubmit} className={styles.form}>
           <input
@@ -73,7 +77,6 @@ export default function RegisterPage() {
             Registration successful! Redirecting...
           </p>
         )}
-        {error && <p className={styles.error}>{error}</p>}
       </div>
     </div>
   );

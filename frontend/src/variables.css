@@ -3,4 +3,8 @@
   --primary-color-hover: #3399ff;
   --primary-color-active: #1a8cff;
   --primary-color-disabled: #b3d9ff;
+  --secondary-color: #1957e9;
+  --secondary-color-hover: #4778ed;
+  --secondary-color-active: #1347b3;
+  --secondary-color-disabled: #99c2f5;
 }
