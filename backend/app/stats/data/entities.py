@@ -1,8 +1,7 @@
 from datetime import datetime, timezone
 from typing import TypedDict
-from uuid import uuid4
 
-from sqlalchemy import DateTime, ForeignKey, String, Uuid
+from sqlalchemy import DateTime, ForeignKey, String, Uuid, text
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql import func
 
@@ -22,7 +21,7 @@ class RoundLogAttributes(TypedDict):
 class Round(Base):
     __tablename__ = "rounds"
 
-    id: Mapped[str] = mapped_column(Uuid(as_uuid=False), primary_key=True, default=lambda: str(uuid4()))
+    id: Mapped[str] = mapped_column(Uuid(as_uuid=False), primary_key=True, server_default=text("gen_random_uuid()"))
     user_id: Mapped[str] = mapped_column(String, ForeignKey("user_profiles.id"), nullable=False, index=True)
     score: Mapped[float] = mapped_column(nullable=False)
     round_id: Mapped[str | None] = mapped_column(String, nullable=True, index=True)

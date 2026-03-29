@@ -67,7 +67,7 @@ def upgrade() -> None:
     op.create_index(op.f('ix_prompts_image_id'), 'prompts', ['image_id'], unique=False)
     op.create_index(op.f('ix_prompts_user_id'), 'prompts', ['user_id'], unique=False)
     op.create_table('rounds',
-    sa.Column('id', sa.Uuid(), nullable=False),
+    sa.Column('id', sa.Uuid(), nullable=False, server_default=sa.text('gen_random_uuid()')),
     sa.Column('user_id', sa.String(), nullable=False),
     sa.Column('score', sa.Float(), nullable=False),
     sa.Column('created_at', sa.DateTime(timezone=True), server_default=sa.text('now()'), nullable=False),
