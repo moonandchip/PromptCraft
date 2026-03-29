@@ -8,9 +8,8 @@ ENV POETRY_VIRTUALENVS_CREATE=false
 
 RUN pip install --no-cache-dir poetry==2.3.2
 
-COPY pyproject.toml ./
-RUN poetry lock --no-interaction --no-ansi && \
-    poetry install --only main --no-root --no-interaction --no-ansi
+COPY pyproject.toml poetry.lock ./
+RUN poetry install --only main --no-root --no-interaction --no-ansi
 
 COPY app ./app
 

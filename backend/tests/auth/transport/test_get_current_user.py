@@ -30,7 +30,7 @@ class TestGetCurrentUserTransportFunction(unittest.TestCase):
     def test_get_current_user_maps_error(self, mock_resolve_user_from_token):
         config = AuthServiceConfig(base_url="http://auth.test", timeout_seconds=10.0)
         mock_resolve_user_from_token.side_effect = ResolveTokenException(
-            status_code=401, error_code=AuthError.INVALID_TOKEN, message="invalid token",
+            AuthError.INVALID_TOKEN, message="invalid token",
         )
         credentials = HTTPAuthorizationCredentials(scheme="Bearer", credentials="bad-token")
         with self.assertRaises(ResolveTokenException) as ctx:

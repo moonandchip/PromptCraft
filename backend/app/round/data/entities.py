@@ -1,6 +1,6 @@
 from datetime import datetime, timezone
 
-from sqlalchemy import DateTime, Float, Integer, String
+from sqlalchemy import DateTime, Float, ForeignKey, Integer, String
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db import Base
@@ -8,7 +8,7 @@ from app.round.types.log_attributes import (
     AttemptLogAttributes,
     PromptLogAttributes,
     RoundImageLogAttributes,
-    RoundUserLogAttributes,
+    UserProfileLogAttributes,
 )
 
 
@@ -16,20 +16,18 @@ def _utc_now() -> datetime:
     return datetime.now(timezone.utc)
 
 
-class RoundUser(Base):
-    __tablename__ = "users"
+class UserProfile(Base):
+    __tablename__ = "user_profiles"
 
     id: Mapped[str] = mapped_column(String, primary_key=True)
-    username: Mapped[str] = mapped_column(String, nullable=False)
-    email: Mapped[str] = mapped_column(String, nullable=False, unique=True, index=True)
-    password_hash: Mapped[str] = mapped_column(String, nullable=False, default="")
+    email: Mapped[str] = mapped_column(String, nullable=False)
+    display_name: Mapped[str | None] = mapped_column(String, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=_utc_now)
-    total_score: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
-    role: Mapped[str] = mapped_column(String, nullable=False, default="user")
+    last_seen_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=_utc_now)
 
     @property
-    def log_attributes(self) -> RoundUserLogAttributes:
-        return RoundUserLogAttributes(user_id=self.id, email=self.email, role=self.role)
+    def log_attributes(self) -> UserProfileLogAttributes:
+        return UserProfileLogAttributes(user_id=self.id, email=self.email, display_name=self.display_name)
 
 
 class RoundImage(Base):
@@ -52,7 +50,7 @@ class Prompt(Base):
     __tablename__ = "prompts"
 
     id: Mapped[str] = mapped_column(String, primary_key=True)
-    user_id: Mapped[str] = mapped_column(String, nullable=False, index=True)
+    user_id: Mapped[str] = mapped_column(String, ForeignKey("user_profiles.id"), nullable=False, index=True)
     image_id: Mapped[str] = mapped_column(String, nullable=False, index=True)
     prompt_text: Mapped[str] = mapped_column(String, nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False, default=_utc_now)
@@ -66,7 +64,7 @@ class Attempt(Base):
     __tablename__ = "attempts"
 
     id: Mapped[str] = mapped_column(String, primary_key=True)
-    user_id: Mapped[str] = mapped_column(String, nullable=False, index=True)
+    user_id: Mapped[str] = mapped_column(String, ForeignKey("user_profiles.id"), nullable=False, index=True)
     image_id: Mapped[str] = mapped_column(String, nullable=False, index=True)
     prompt_id: Mapped[str] = mapped_column(String, nullable=False, index=True)
     round_id: Mapped[str] = mapped_column(String, nullable=False, index=True)

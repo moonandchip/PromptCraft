@@ -4,9 +4,11 @@ from unittest.mock import MagicMock, patch
 from app.round.exceptions import RoundError, SubmitRoundException
 from app.round.service.generate_image import GenerationError
 from app.round.service.submit_round import submit_round
+from app.round.types.args import SubmitRoundArgs
 
 
 class TestSubmitRound(unittest.TestCase):
+    @patch("app.round.service.submit_round.upsert_user_profile", autospec=True)
     @patch("app.round.service.submit_round.save_submission", autospec=True)
     @patch("app.round.service.submit_round.compute_similarity_score", autospec=True)
     @patch("app.round.service.submit_round.generate_image", autospec=True)
@@ -17,6 +19,7 @@ class TestSubmitRound(unittest.TestCase):
         mock_generate_image,
         mock_compute_similarity_score,
         mock_save_submission,
+        mock_upsert_user_profile,
     ):
         session = MagicMock()
         mock_get_round_by_id.return_value = {
@@ -29,16 +32,20 @@ class TestSubmitRound(unittest.TestCase):
 
         response = submit_round(
             session=session,
-            user_email="test@example.com",
-            round_id="ancient-temple",
-            user_prompt="a majestic scene",
+            args=SubmitRoundArgs(user_id="user-uuid-1234", user_email="test@example.com", round_id="ancient-temple", user_prompt="a majestic scene"),
         )
 
         self.assertEqual(response.generated_image_url, "https://example.com/generated.jpg")
         self.assertEqual(response.similarity_score, 72.5)
+        mock_upsert_user_profile.assert_called_once_with(
+            session,
+            user_id="user-uuid-1234",
+            email="test@example.com",
+            display_name=None,
+        )
         mock_save_submission.assert_called_once_with(
             session=session,
-            user_email="test@example.com",
+            user_id="user-uuid-1234",
             reference_image="ancient-temple.jpg",
             difficulty="medium",
             prompt_text="a majestic scene",
@@ -54,9 +61,7 @@ class TestSubmitRound(unittest.TestCase):
         with self.assertRaises(SubmitRoundException) as ctx:
             submit_round(
                 session=MagicMock(),
-                user_email="test@example.com",
-                round_id="missing-round",
-                user_prompt="prompt",
+                args=SubmitRoundArgs(user_id="user-uuid-1234", user_email="test@example.com", round_id="missing-round", user_prompt="prompt"),
             )
 
         self.assertEqual(ctx.exception.status_code, 404)
@@ -74,14 +79,13 @@ class TestSubmitRound(unittest.TestCase):
         with self.assertRaises(SubmitRoundException) as ctx:
             submit_round(
                 session=MagicMock(),
-                user_email="test@example.com",
-                round_id="ancient-temple",
-                user_prompt="prompt",
+                args=SubmitRoundArgs(user_id="user-uuid-1234", user_email="test@example.com", round_id="ancient-temple", user_prompt="prompt"),
             )
 
         self.assertEqual(ctx.exception.status_code, 502)
         self.assertEqual(ctx.exception.message, "Image generation failed")
 
+    @patch("app.round.service.submit_round.upsert_user_profile", autospec=True)
     @patch("app.round.service.submit_round.save_submission", autospec=True)
     @patch("app.round.service.submit_round.compute_similarity_score", autospec=True)
     @patch("app.round.service.submit_round.generate_image", autospec=True)
@@ -92,6 +96,7 @@ class TestSubmitRound(unittest.TestCase):
         mock_generate_image,
         mock_compute_similarity_score,
         mock_save_submission,
+        mock_upsert_user_profile,
     ):
         session = MagicMock()
         mock_get_round_by_id.return_value = {
@@ -104,9 +109,7 @@ class TestSubmitRound(unittest.TestCase):
 
         response = submit_round(
             session=session,
-            user_email="test@example.com",
-            round_id="ancient-temple",
-            user_prompt="prompt",
+            args=SubmitRoundArgs(user_id="user-uuid-1234", user_email="test@example.com", round_id="ancient-temple", user_prompt="prompt"),
         )
 
         self.assertEqual(response.similarity_score, 0.0)
@@ -115,6 +118,7 @@ class TestSubmitRound(unittest.TestCase):
         self.assertEqual(kwargs["round_id"], "ancient-temple")
         self.assertEqual(kwargs["generated_image_url"], "https://example.com/generated.jpg")
 
+    @patch("app.round.service.submit_round.upsert_user_profile", autospec=True)
     @patch("app.round.service.submit_round.save_submission", autospec=True)
     @patch("app.round.service.submit_round.compute_similarity_score", autospec=True)
     @patch("app.round.service.submit_round.generate_image", autospec=True)
@@ -125,6 +129,7 @@ class TestSubmitRound(unittest.TestCase):
         mock_generate_image,
         mock_compute_similarity_score,
         mock_save_submission,
+        mock_upsert_user_profile,
     ):
         mock_get_round_by_id.return_value = {
             "id": "ancient-temple",
@@ -138,9 +143,7 @@ class TestSubmitRound(unittest.TestCase):
         with self.assertRaises(SubmitRoundException) as ctx:
             submit_round(
                 session=MagicMock(),
-                user_email="test@example.com",
-                round_id="ancient-temple",
-                user_prompt="prompt",
+                args=SubmitRoundArgs(user_id="user-uuid-1234", user_email="test@example.com", round_id="ancient-temple", user_prompt="prompt"),
             )
 
         self.assertEqual(ctx.exception.status_code, 500)

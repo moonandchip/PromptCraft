@@ -1,8 +1,8 @@
-from dataclasses import dataclass
 from datetime import datetime, timezone
+from typing import TypedDict
 from uuid import uuid4
 
-from sqlalchemy import DateTime, ForeignKey, String
+from sqlalchemy import DateTime, ForeignKey, String, Uuid
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy.sql import func
 
@@ -13,8 +13,7 @@ def _utc_now() -> datetime:
     return datetime.now(timezone.utc)
 
 
-@dataclass(frozen=True)
-class RoundLogAttributes:
+class RoundLogAttributes(TypedDict):
     round_id: str
     user_id: str
     score: float
@@ -23,9 +22,11 @@ class RoundLogAttributes:
 class Round(Base):
     __tablename__ = "rounds"
 
-    id: Mapped[str] = mapped_column(String, primary_key=True, default=lambda: str(uuid4()))
-    user_id: Mapped[str] = mapped_column(String, ForeignKey("users.id"), nullable=False, index=True)
+    id: Mapped[str] = mapped_column(Uuid(as_uuid=False), primary_key=True, default=lambda: str(uuid4()))
+    user_id: Mapped[str] = mapped_column(String, ForeignKey("user_profiles.id"), nullable=False, index=True)
     score: Mapped[float] = mapped_column(nullable=False)
+    round_id: Mapped[str | None] = mapped_column(String, nullable=True, index=True)
+    target_image_url: Mapped[str | None] = mapped_column(String, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True),
         server_default=func.now(),

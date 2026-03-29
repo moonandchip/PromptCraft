@@ -1,8 +1,7 @@
 import logging
 
-from app.constants import AUTH_CHANNEL
-from app.auth.constants import REGISTER_FEATURE
-from app.auth.exceptions import AuthError, RegisterException
+from ..constants import CHANNEL, REGISTER_FEATURE
+from ..exceptions import AuthError, RegisterException
 
 from ..constants import ERR_INVALID_AUTH_REGISTER_RESPONSE
 from ..data.post_register import post_register
@@ -25,19 +24,19 @@ def register_user(payload: RegisterRequest, config: AuthServiceConfig) -> UserRe
         )
     except AuthServiceError as exc:
         raise RegisterException(
-            status_code=exc.status_code, error_code=AuthError.INVALID_CREDENTIALS, message=exc.detail,
+            AuthError.INVALID_CREDENTIALS, message=exc.detail,
         ) from exc
 
     try:
         user = extract_user_from_response(response, ERR_INVALID_AUTH_REGISTER_RESPONSE)
     except AuthServiceError as exc:
         raise RegisterException(
-            status_code=exc.status_code, error_code=AuthError.SERVICE_UNAVAILABLE, message=exc.detail,
+            AuthError.SERVICE_UNAVAILABLE, message=exc.detail,
         ) from exc
 
     logger.info(
         "User registered",
-        extra={"channel": AUTH_CHANNEL, "feature": REGISTER_FEATURE, "user": payload.email},
+        extra={"channel": CHANNEL, "feature": REGISTER_FEATURE, "user": payload.email},
     )
 
     return user

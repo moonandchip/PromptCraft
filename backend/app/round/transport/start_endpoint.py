@@ -7,12 +7,12 @@ from app.auth.dependencies import get_current_user
 from app.auth.models import UserResponse
 from app.exceptions import AppException
 from app.response import ApiResponse
-from app.constants import ROUND_CHANNEL
-from app.round.constants import START_ROUND_FEATURE
+from ..constants import CHANNEL, START_ROUND_FEATURE
 from app.round.exceptions import RoundError, StartRoundException
 
 from ..models import RoundStartResponse
 from ..service import start_round
+from ..types.args import StartRoundArgs
 from .get_db_session import get_db_session
 
 logger = logging.getLogger(__name__)
@@ -23,15 +23,14 @@ def start_endpoint(
     session: Session = Depends(get_db_session),
 ) -> ApiResponse[RoundStartResponse]:
     try:
-        result = start_round(session=session, user_id=current_user.id)
+        args = StartRoundArgs(user_id=current_user.id, user_email=current_user.email, user_display_name=current_user.name)
+        result = start_round(session=session, args=args)
         return ApiResponse(data=result)
     except AppException:
         raise
     except Exception as exc:
-        logger.exception(
+        logger.error(
             "Unexpected error in start_round",
-            extra={"channel": ROUND_CHANNEL, "feature": START_ROUND_FEATURE, "user": current_user.id},
+            extra={"channel": CHANNEL, "feature": START_ROUND_FEATURE, "error": str(exc), "user": current_user.id},
         )
-        raise StartRoundException(
-            status_code=500, error_code=RoundError.UNKNOWN_ERROR, message="An unexpected error occurred",
-        ) from exc
+        raise StartRoundException(RoundError.UNKNOWN_ERROR) from exc

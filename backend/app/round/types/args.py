@@ -1,15 +1,17 @@
 from dataclasses import dataclass
 
 
-@dataclass(frozen=True)
+@dataclass
 class SubmitRoundArgs:
-    session_factory: object  # sessionmaker or Session, kept generic for DI
+    user_id: str
     user_email: str
     round_id: str
     user_prompt: str
+    user_display_name: str | None = None
 
 
-@dataclass(frozen=True)
+@dataclass
 class StartRoundArgs:
-    session_factory: object
     user_id: str
+    user_email: str
+    user_display_name: str | None = None

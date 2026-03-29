@@ -17,12 +17,10 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    op.add_column("attempts", sa.Column("round_id", sa.String(), nullable=True))
-    op.add_column("attempts", sa.Column("generated_image_url", sa.String(), nullable=False, server_default=""))
-    op.create_index(op.f("ix_attempts_round_id"), "attempts", ["round_id"], unique=False)
+    # These columns are already created by the initial migration (e0736feb8889).
+    # This migration existed to backfill them on an older RDS schema and is now a no-op.
+    pass
 
 
 def downgrade() -> None:
-    op.drop_index(op.f("ix_attempts_round_id"), table_name="attempts")
-    op.drop_column("attempts", "generated_image_url")
-    op.drop_column("attempts", "round_id")
+    pass
