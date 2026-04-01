@@ -1,0 +1,31 @@
+.container {
+  background-color: #ffe5e5;
+  color: #b00020;
+  padding: 10px 14px;
+  border-radius: 6px;
+  margin: 10px 0;
+
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+
+  font-size: 14px;
+  border: 1px solid #ffb3b3;
+}
+
+.text {
+  flex: 1;
+}
+
+.closeButton {
+  background: transparent;
+  border: none;
+  color: #b00020;
+  font-size: 16px;
+  cursor: pointer;
+  margin-left: 10px;
+}
+
+.closeButton:hover {
+  opacity: 0.7;
+}
