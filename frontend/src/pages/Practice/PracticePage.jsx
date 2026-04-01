@@ -3,17 +3,37 @@ import { startRound, submitPrompt } from "../../api";
 import styles from "./PracticePage.module.css";
 import ErrorBanner from "../../components/ErrorBanner";
 
+const PRACTICE_STORAGE_KEY = "promptcraft_practice_round_state";
+
+function loadSavedPracticeState() {
+  try {
+    const raw = localStorage.getItem(PRACTICE_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch (error) {
+    console.error("Failed to parse saved practice state:", error);
+    localStorage.removeItem(PRACTICE_STORAGE_KEY);
+    return null;
+  }
+}
+
+function clearSavedPracticeState() {
+  localStorage.removeItem(PRACTICE_STORAGE_KEY);
+}
+
 export default function PracticePage() {
-  const [referenceImage, setReferenceImage] = useState(null);
-  const [referenceRoundId, setReferenceRoundId] = useState(null);
-  const [generatedImage, setGeneratedImage] = useState(null);
-  const [prompt, setPrompt] = useState("");
+  const savedState = loadSavedPracticeState();
+  const [referenceImage, setReferenceImage] = useState(savedState?.referenceImage ?? null);
+  const [referenceRoundId, setReferenceRoundId] = useState(savedState?.referenceRoundId ?? null);
+  const [generatedImage, setGeneratedImage] = useState(savedState?.generatedImage ?? null);
+  const [prompt, setPrompt] = useState(savedState?.prompt ?? "");
   const [loadingGenerated, setLoadingGenerated] = useState(false);
-  const [similarityScore, setSimilarityScore] = useState(null);
+  const [similarityScore, setSimilarityScore] = useState(savedState?.similarityScore ?? null);
   const [error, setError] = useState(null);
   const [referenceError, setReferenceError] = useState(null);
-
+  const [attemptHistory, setAttemptHistory] = useState(savedState?.attemptHistory ?? []);
+  const [showAttemptHistory, setShowAttemptHistory] = useState(savedState?.showAttemptHistory ?? false);
   const loadReference = async () => {
+    clearSavedPracticeState();
     try {
       const data = await startRound();
       setReferenceImage(
@@ -25,15 +45,44 @@ export default function PracticePage() {
       setPrompt("");
       setError(null);
       setReferenceError(null);
+      setAttemptHistory([]);
+      setShowAttemptHistory(false);
     } catch (err) {
       console.error("Failed to load reference image:", err);
+      clearSavedPracticeState();
       setReferenceError("Failed to load reference image.");
     }
   };
 
   useEffect(() => {
+  if (!savedState?.referenceRoundId || !savedState?.referenceImage) {
     loadReference();
-  }, []);
+  }
+}, []);
+
+  useEffect(() => {
+  if (!referenceRoundId || !referenceImage) return;
+
+  const stateToSave = {
+    referenceImage,
+    referenceRoundId,
+    generatedImage,
+    prompt,
+    similarityScore,
+    attemptHistory,
+    showAttemptHistory,
+  };
+
+  localStorage.setItem(PRACTICE_STORAGE_KEY, JSON.stringify(stateToSave));
+}, [
+  referenceImage,
+  referenceRoundId,
+  generatedImage,
+  prompt,
+  similarityScore,
+  attemptHistory,
+  showAttemptHistory,
+]);
 
   const handlePromptChange = (e) => {
     setPrompt(e.target.value.slice(0, 2000));
@@ -55,6 +104,16 @@ export default function PracticePage() {
 
       setGeneratedImage(result.data.generated_image_url);
       setSimilarityScore(Number(result.data.similarity_score));
+      setAttemptHistory((prev) => [
+        ...prev,
+        {
+          prompt: prompt.trim(),
+          generatedImageUrl: result.data.generated_image_url,
+          similarityScore: Number(result.data.similarity_score),
+          submittedAt: Date.now(),
+        },
+      ]);
+
     } catch (err) {
       console.error(err);
       setError(err.message || "Failed to generate image.");
@@ -175,6 +234,48 @@ export default function PracticePage() {
           </div>
         </>
       )}
+       {attemptHistory.length > 0 && (
+  <div className={styles.attemptHistorySection}>
+    <button
+      type="button"
+      className={styles.attemptHistoryToggle}
+      onClick={() => setShowAttemptHistory((prev) => !prev)}
+    >
+      {showAttemptHistory
+        ? `Hide Previous Attempts (${attemptHistory.length})`
+        : `Show Previous Attempts (${attemptHistory.length})`}
+    </button>
+
+    {showAttemptHistory && (
+      <div className={styles.attemptHistoryList}>
+        {attemptHistory.map((attempt, index) => (
+          <div key={`${attempt.submittedAt}-${index}`} className={styles.attemptCard}>
+            <div className={styles.attemptHeader}>
+              <span className={styles.attemptTitle}>
+                Attempt {index + 1}
+              </span>
+              <span className={styles.attemptScore}>
+                {attempt.similarityScore.toFixed(1)} / 100
+              </span>
+            </div>
+
+            <div className={styles.attemptPrompt}>
+              <strong>Prompt:</strong> {attempt.prompt}
+            </div>
+
+            <div className={styles.attemptImageWrapper}>
+              <img
+                src={attempt.generatedImageUrl}
+                alt={`Attempt ${index + 1}`}
+                className={styles.attemptImage}
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+    )}
+  </div>
+)}
     </div>
   );
 }
