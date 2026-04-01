@@ -70,7 +70,8 @@
 .logoutButton {
   padding: 0.6rem 1.2rem;
   border-radius: 8px;
-  background-color: rgba(25, 87, 233, 0.8);
+  /* background-color: rgba(25, 87, 233, 0.8); */
+  background-color: var(--secondary-color);
   color: white;
   font-weight: 600;
   font-size: 1.125rem;
@@ -80,6 +81,7 @@
 }
 
 .logoutButton:hover {
-  background-color: rgba(25, 87, 233, 1);
+  /* background-color: rgba(25, 87, 233, 1); */
+  background-color: var(--secondary-color-hover);
   transform: scale(1.03);
 }
