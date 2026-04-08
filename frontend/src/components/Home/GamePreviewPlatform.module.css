@@ -1,0 +1,160 @@
+.previewCard {
+  max-width: 980px;
+  width: 100%;
+  transform: rotate(1deg);
+  overflow: hidden;
+  animation: floatPreview 4.5s ease-in-out infinite;
+}
+
+.grassTop {
+  height: 18px;
+  background: #67c23a;
+  border-bottom: 4px solid #3b2f1f;
+  margin: -1.5rem -1.5rem 1.25rem;
+}
+
+.headerRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.7rem;
+  color: #1e1e1e;
+}
+
+.badge {
+  border: 3px solid #3b2f1f;
+  background: #fff7dc;
+  padding: 0.4rem 0.75rem;
+  font-weight: 700;
+  color: #1e1e1e;
+  box-shadow: 0 4px 0 #3b2f1f;
+}
+
+.previewGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+}
+
+.imagePanel,
+.promptPanel {
+  background: rgba(255, 255, 255, 0.45);
+  border: 3px solid #3b2f1f;
+  padding: 1rem;
+}
+
+.label {
+  margin: 0 0 0.75rem;
+  font-weight: 700;
+  color: #1e1e1e;
+}
+
+.imageMock {
+  min-height: 280px;
+  border: 3px solid #3b2f1f;
+  background: #dff3ff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+
+.previewImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.inputMock {
+  min-height: 88px;
+  border: 3px solid #3b2f1f;
+  background: #ffffff;
+  padding: 0.9rem;
+  margin-bottom: 1rem;
+  line-height: 1.5;
+  color: #2d2d2d;
+}
+
+.generateButton {
+  border: 3px solid #3b2f1f;
+  background: #67c23a;
+  padding: 0.8rem 1rem;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  box-shadow: 0 5px 0 #3b2f1f;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  margin-bottom: 1rem;
+}
+
+.generateButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 7px 0 #3b2f1f;
+}
+
+.resultBox {
+  border: 3px solid #3b2f1f;
+  background: #fff7dc;
+  padding: 1rem;
+}
+
+.resultText {
+  margin: 0 0 0.35rem;
+  font-weight: 700;
+  color: #1e1e1e;
+}
+
+.score {
+  margin: 0 0 0.4rem;
+  font-size: 2rem;
+  color: #1e1e1e;
+}
+
+.resultSubtext {
+  margin: 0;
+  color: #3a3a3a;
+  line-height: 1.45;
+}
+
+@keyframes floatPreview {
+  0% {
+    transform: translateY(0) rotate(1deg);
+  }
+  50% {
+    transform: translateY(-6px) rotate(1deg);
+  }
+  100% {
+    transform: translateY(0) rotate(1deg);
+  }
+}
+
+@media (max-width: 768px) {
+  .previewCard {
+    transform: none;
+    animation: none;
+  }
+
+  .headerRow {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .previewGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .imageMock {
+    min-height: 220px;
+  }
+
+  .title {
+    font-size: 1.45rem;
+  }
+}

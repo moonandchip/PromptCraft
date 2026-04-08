@@ -1,0 +1,235 @@
+.page {
+  min-height: 100vh;
+  background: linear-gradient(to bottom, #e8f8ff 0%, #f7fcff 100%);
+  padding: 2.5rem 1.25rem 4rem;
+  position: relative;
+  overflow-x: hidden;
+}
+
+.container {
+  max-width: 950px;
+  margin: 0 auto;
+  position: relative;
+  z-index: 2;
+}
+
+.hero {
+  background: #f7f1d5;
+  border: 4px solid #3b2f1f;
+  box-shadow: 0 8px 0 #3b2f1f, 0 14px 24px rgba(0, 0, 0, 0.15);
+  padding: 2rem;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
+.kicker {
+  margin: 0 0 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: #2f2f2f;
+}
+
+.title {
+  font-family: 'Press Start 2P', cursive;
+  letter-spacing: -1.5px;
+  margin: 0 0 1rem;
+  font-size: clamp(1.6rem, 3vw, 1.6rem);
+  line-height: 1.05;
+  color: #1e1e1e;
+}
+
+.subtitle {
+  max-width: 650px;
+  margin: 0 auto 1.5rem;
+  font-size: 1rem;
+  line-height: 1.6;
+  color: #3a3a3a;
+}
+
+.actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.primaryButton,
+.secondaryButton {
+  border: 3px solid #3b2f1f;
+  padding: 0.85rem 1.35rem;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  box-shadow: 0 5px 0 #3b2f1f;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.primaryButton {
+  background: #67c23a;
+}
+
+.secondaryButton {
+  background: #fff7dc;
+}
+
+.primaryButton:hover,
+.secondaryButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 7px 0 #3b2f1f;
+}
+
+.sectionCard {
+  background: #ffffff;
+  border: 4px solid #3b2f1f;
+  box-shadow: 0 8px 0 #3b2f1f, 0 12px 22px rgba(0, 0, 0, 0.12);
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.sectionTitle {
+  margin: 0 0 1rem;
+  font-size: 1.6rem;
+  color: #1e1e1e;
+}
+
+.sectionText {
+  margin: 0;
+  line-height: 1.7;
+  color: #333;
+}
+
+.stepsGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.stepCard {
+  background: #fff7dc;
+  border: 3px solid #3b2f1f;
+  padding: 1rem;
+}
+
+.stepNumber {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  margin-bottom: 0.75rem;
+  background: #67c23a;
+  border: 3px solid #3b2f1f;
+  font-weight: 700;
+  color: #1e1e1e;
+}
+
+.stepTitle {
+  margin: 0 0 0.5rem;
+  font-size: 1.1rem;
+  color: #1e1e1e;
+}
+
+.stepText {
+  margin: 0;
+  line-height: 1.55;
+  color: #333;
+}
+
+.modeList {
+  display: grid;
+  gap: 1rem;
+}
+
+.modeItem {
+  background: #fff7dc;
+  border: 3px solid #3b2f1f;
+  padding: 1rem;
+}
+
+.modeTitle {
+  margin: 0 0 0.45rem;
+  color: #1e1e1e;
+}
+
+.modeText {
+  margin: 0;
+  line-height: 1.55;
+  color: #333;
+}
+
+.tipsList {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.tipItem {
+  background: #fff7dc;
+  border: 3px solid #3b2f1f;
+  padding: 0.95rem 1rem;
+  font-weight: 600;
+  color: #1e1e1e;
+}
+
+.backgroundDecor1,
+.backgroundDecor2,
+.backgroundDecor3 {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.5);
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.08);
+  animation: floatPixel 4s ease-in-out infinite;
+}
+
+.backgroundDecor1 {
+  top: 90px;
+  left: 10%;
+}
+
+.backgroundDecor2 {
+  top: 260px;
+  right: 12%;
+  animation-delay: 0.8s;
+}
+
+.backgroundDecor3 {
+  bottom: 120px;
+  left: 16%;
+  animation-delay: 1.4s;
+}
+
+@keyframes floatPixel {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .page {
+    padding: 1.5rem 1rem 3rem;
+  }
+
+  .hero {
+    padding: 1.5rem 1.1rem;
+  }
+
+  .sectionCard {
+    padding: 1.15rem;
+  }
+
+  .stepsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .sectionTitle {
+    font-size: 1.35rem;
+  }
+}
