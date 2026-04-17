@@ -18,6 +18,9 @@ export default function Navbar() {
           <Link to="/">PromptCraft</Link>
         </div>
         <div className={styles.mainLinks}>
+          <Link to="/how-to-play" className={styles.navLink}>
+              How to Play
+          </Link>
           <Link to="/practice" className={styles.navLink}>
             Practice
           </Link>
