@@ -7,7 +7,7 @@ from app.round.data.entities import Attempt, Prompt
 def get_user_stats_from_attempts(
     session: Session,
     user_id: str,
-    recent_limit: int = 5,
+    recent_limit: int | None = None,
 ) -> dict:
     """Retrieves comprehensive user stats derived from the attempts table.
 
@@ -37,8 +37,9 @@ def get_user_stats_from_attempts(
         .join(Prompt, Prompt.id == Attempt.prompt_id)
         .where(Attempt.user_id == user_id)
         .order_by(Attempt.created_at.desc())
-        .limit(recent_limit)
     )
+    if recent_limit is not None:
+        recent_query = recent_query.limit(recent_limit)
     recent_rows = session.execute(recent_query).all()
 
     return {

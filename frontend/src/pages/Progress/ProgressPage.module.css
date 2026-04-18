@@ -1,5 +1,5 @@
 .container {
-  max-width: 600px;
+  max-width: 860px;
   margin: 3rem auto;
   padding: 2rem;
   background: linear-gradient(145deg, #ffffff, #f1f3f6);
@@ -49,4 +49,119 @@
   font-style: italic;
   color: #777;
   font-size: 1.1rem;
+}
+
+.chartSection {
+  margin-top: 1.5rem;
+  padding: 1.25rem;
+  border-radius: 14px;
+  background: linear-gradient(180deg, #fbfdff 0%, #f2f7fb 100%);
+  border: 1px solid rgba(39, 88, 123, 0.1);
+}
+
+.chartHeader {
+  margin-bottom: 1rem;
+}
+
+.chartTitle {
+  margin: 0;
+  color: #1f2937;
+  font-size: 1.2rem;
+}
+
+.chartSubtitle {
+  margin: 0.35rem 0 0;
+  color: #5f6b7a;
+  font-size: 0.95rem;
+}
+
+.chartWrapper {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.chart {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.gridLine {
+  stroke: rgba(39, 88, 123, 0.14);
+  stroke-width: 1;
+}
+
+.axisLabel {
+  fill: #738091;
+  font-size: 12px;
+  text-anchor: end;
+}
+
+.areaPath {
+  fill: rgba(76, 154, 255, 0.18);
+}
+
+.linePath {
+  fill: none;
+  stroke: #2b6cb0;
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.dataPoint {
+  fill: #ffffff;
+  stroke: #2b6cb0;
+  stroke-width: 3;
+}
+
+.xAxisLabels {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(40px, 1fr));
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  padding-left: 1.5rem;
+}
+
+.xAxisLabel {
+  text-align: center;
+  color: #667384;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.chartFooter {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.75rem;
+  color: #546274;
+  font-size: 0.9rem;
+}
+
+.emptyChart {
+  padding: 1rem;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.8);
+  color: #5f6b7a;
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  .container {
+    margin: 1.5rem 1rem;
+    padding: 1.25rem;
+  }
+
+  .title {
+    margin-bottom: 1.5rem;
+  }
+
+  .chartSection {
+    padding: 1rem;
+  }
+
+  .chartFooter {
+    font-size: 0.8rem;
+  }
 }
