@@ -1,0 +1,199 @@
+.page {
+  min-height: 100vh;
+  width: 100%;
+  overflow-x: hidden;
+}
+
+.skyBackground {
+  min-height: 100vh;
+  padding: 2rem 1.25rem 5rem;
+  background: linear-gradient(to bottom, #87ceeb 0%, #b7e8ff 40%, #eafaff 100%);
+  position: relative;
+}
+
+.heroSection,
+.previewSection,
+.modesSection,
+.leaderboardSection {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 3rem;
+  position: relative;
+  z-index: 2;
+}
+
+.modesWrapper {
+  width: 100%;
+  max-width: 1000px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.practiceCard,
+.challengeCard,
+.progressCard {
+  max-width: 420px;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.practiceCard {
+  align-self: flex-start;
+  transform: rotate(-1deg);
+}
+
+.challengeCard {
+  align-self: center;
+  transform: rotate(1deg);
+}
+
+.progressCard {
+  align-self: flex-end;
+  transform: rotate(-1deg);
+}
+
+.leaderboardCard {
+  max-width: 680px;
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.grassTop {
+  height: 18px;
+  background: #67c23a;
+  border-bottom: 4px solid #3b2f1f;
+  margin: -1.5rem -1.5rem 1.25rem;
+}
+
+.cardTitle {
+  margin: 0 0 0.75rem;
+  font-size: 1.4rem;
+  color: #1e1e1e;
+}
+
+.cardText {
+  margin: 0;
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #2f2f2f;
+}
+
+.cardButton {
+  margin-top: 1rem;
+  border: 3px solid #3b2f1f;
+  background: #fff7dc;
+  padding: 0.8rem 1rem;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  box-shadow: 0 5px 0 #3b2f1f;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.cardButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 7px 0 #3b2f1f;
+}
+
+.leaderboardTitle {
+  margin: 0 0 1rem;
+  text-align: center;
+  font-size: 1.8rem;
+  color: #1e1e1e;
+}
+
+.leaderboardList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.leaderboardRow {
+  display: grid;
+  grid-template-columns: 60px 1fr 80px;
+  gap: 1rem;
+  align-items: center;
+  border: 3px solid #3b2f1f;
+  background: #fff7dc;
+  padding: 0.85rem 1rem;
+  font-weight: 700;
+  color: #1e1e1e;
+}
+
+.pixelDecor1,
+.pixelDecor2,
+.pixelDecor3,
+.pixelDecor4 {
+  position: absolute;
+  width: 24px;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.4);
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.08);
+  z-index: 1;
+  animation: floatPixel 4s ease-in-out infinite;
+}
+
+.pixelDecor1 {
+  top: 70px;
+  left: 8%;
+}
+
+.pixelDecor2 {
+  top: 220px;
+  right: 12%;
+  animation-delay: 0.5s;
+}
+
+.pixelDecor3 {
+  top: 540px;
+  left: 18%;
+  animation-delay: 1s;
+}
+
+.pixelDecor4 {
+  top: 860px;
+  right: 20%;
+  animation-delay: 1.5s;
+}
+
+@keyframes floatPixel {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .skyBackground {
+    padding: 1.25rem 1rem 4rem;
+  }
+
+  .heroSection,
+  .previewSection,
+  .modesSection,
+  .leaderboardSection {
+    margin-bottom: 2rem;
+  }
+
+  .practiceCard,
+  .challengeCard,
+  .progressCard {
+    align-self: stretch;
+    transform: none;
+    max-width: 100%;
+  }
+
+  .leaderboardRow {
+    grid-template-columns: 50px 1fr 70px;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+  }
+}
