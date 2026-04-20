@@ -27,30 +27,52 @@ ROUNDS: list[dict] = [
         "title": "Ancient Temple",
         "difficulty": "medium",
         "reference_image": "ancient-temple.jpg",
+        "target_prompt": (
+            "Weathered stone temple ruins covered in vines, jungle setting, dramatic shafts of "
+            "sunlight, moss-covered statues, cinematic lighting, photorealistic."
+        ),
     },
     {
         "id": "futuristic-city",
         "title": "Futuristic City",
         "difficulty": "hard",
         "reference_image": "futuristic-city.jpg",
+        "target_prompt": (
+            "Sprawling cyberpunk metropolis at night, towering glass skyscrapers with neon "
+            "billboards, flying vehicles between buildings, rain-slicked streets reflecting "
+            "purple and teal lights, ultra-detailed, cinematic."
+        ),
     },
     {
         "id": "golden-sunset",
         "title": "Golden Sunset",
         "difficulty": "easy",
         "reference_image": "golden-sunset.jpeg",
+        "target_prompt": (
+            "Warm golden-hour sunset over a calm ocean horizon, soft orange and pink sky, "
+            "silhouetted clouds, gentle reflections on the water, photographic."
+        ),
     },
     {
         "id": "snowy-forest",
         "title": "Snowy Forest",
         "difficulty": "easy",
         "reference_image": "snowy-forest.jpg",
+        "target_prompt": (
+            "Quiet evergreen forest blanketed in fresh snow, tall pine trees, soft overcast "
+            "light, footprints in the snow, serene winter atmosphere, photographic."
+        ),
     },
     {
         "id": "underwater-world",
         "title": "Underwater World",
         "difficulty": "medium",
         "reference_image": "underwater-world.jpeg",
+        "target_prompt": (
+            "Vibrant coral reef teeming with tropical fish, clear blue water with sunbeams "
+            "filtering down from the surface, sea turtle in the foreground, photorealistic "
+            "underwater photography."
+        ),
     },
 ]
 

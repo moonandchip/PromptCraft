@@ -69,11 +69,22 @@ class TestRoundInfo(unittest.TestCase):
             title="Golden Sunset",
             difficulty="easy",
             reference_image="golden-sunset.jpeg",
+            target_prompt="A glowing sunset",
         )
         self.assertEqual(round_info.id, "golden-sunset")
         self.assertEqual(round_info.title, "Golden Sunset")
         self.assertEqual(round_info.difficulty, "easy")
         self.assertEqual(round_info.reference_image, "golden-sunset.jpeg")
+        self.assertEqual(round_info.target_prompt, "A glowing sunset")
+
+    def test_round_info_target_prompt_is_optional(self):
+        round_info = RoundInfo(
+            id="golden-sunset",
+            title="Golden Sunset",
+            difficulty="easy",
+            reference_image="golden-sunset.jpeg",
+        )
+        self.assertIsNone(round_info.target_prompt)
 
     def test_round_info_missing_field_raises_validation_error(self):
         with self.assertRaises(ValidationError):
@@ -85,9 +96,15 @@ class TestRoundStartResponse(unittest.TestCase):
         response = RoundStartResponse(
             round_id="ancient-temple",
             target_image_url="/static/ancient-temple.jpg",
+            title="Ancient Temple",
+            difficulty="medium",
+            target_prompt="An ancient temple at dawn.",
         )
         self.assertEqual(response.round_id, "ancient-temple")
         self.assertEqual(response.target_image_url, "/static/ancient-temple.jpg")
+        self.assertEqual(response.title, "Ancient Temple")
+        self.assertEqual(response.difficulty, "medium")
+        self.assertEqual(response.target_prompt, "An ancient temple at dawn.")
 
     def test_start_round_response_missing_field_raises_validation_error(self):
         with self.assertRaises(ValidationError):

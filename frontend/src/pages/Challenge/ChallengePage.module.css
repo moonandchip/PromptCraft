@@ -1,0 +1,362 @@
+.page {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem;
+  color: #111827;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 700;
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.loadingBox {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 2rem;
+  color: #6b7280;
+}
+
+.headerCard {
+  width: 100%;
+  max-width: 700px;
+  background-color: #ffffff;
+  border: 2px solid #e5e7eb;
+  border-radius: 0.75rem;
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+}
+
+.headerRow {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.headerCell {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.headerLabel {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #6b7280;
+  font-weight: 600;
+}
+
+.headerValue {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #111827;
+  text-transform: capitalize;
+}
+
+.difficulty-easy {
+  color: #047857;
+}
+
+.difficulty-medium {
+  color: #b45309;
+}
+
+.difficulty-hard {
+  color: #b91c1c;
+}
+
+.attemptRules {
+  background-color: #fef3c7;
+  border: 1px solid #fde68a;
+  color: #92400e;
+  padding: 0.5rem 0.75rem;
+  border-radius: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.imagesRow {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  width: 100%;
+  max-width: 700px;
+  margin: 0 auto 1.5rem;
+  align-items: start;
+}
+
+.imageBundle {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.label {
+  font-weight: 500;
+  font-size: 1rem;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.imageWrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  border: 2px solid #e5e7eb;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  display: flex;
+  background-color: #f9fafb;
+}
+
+.imageWrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: fill;
+  display: block;
+}
+
+.placeholder {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 0.9rem;
+  color: #6b7280;
+  padding: 1rem;
+}
+
+.placeholder span {
+  margin-top: 0.5rem;
+}
+
+.emoji {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.promptSection {
+  width: 100%;
+  max-width: 700px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin: 0 auto;
+}
+
+.promptLabel {
+  font-weight: 500;
+  font-size: 1rem;
+}
+
+.promptInput {
+  width: 100%;
+  min-height: 160px;
+  padding: 0.75rem;
+  border: 2px solid #d1d5db;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  font-family: inherit;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.promptInput:focus {
+  border-color: var(--primary-color);
+  outline: none;
+}
+
+.promptInput:disabled {
+  background-color: #f3f4f6;
+  color: #6b7280;
+}
+
+.promptControls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.5rem;
+}
+
+.generateButton {
+  background-color: var(--primary-color);
+  color: white;
+  padding: 0.5rem 1rem;
+  font-weight: 500;
+  font-size: 1rem;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+
+.generateButton:disabled {
+  background-color: var(--primary-color-disabled);
+  cursor: not-allowed;
+}
+
+.generateButton:hover:not(:disabled) {
+  background-color: var(--primary-color-hover);
+}
+
+.charCounter {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+.scoreCard {
+  width: 100%;
+  max-width: 700px;
+  margin-top: 1.25rem;
+  padding: 1rem 1.25rem;
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.75rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.scoreRow {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.scoreLabel {
+  font-weight: 500;
+}
+
+.scorePill {
+  background-color: #e0f2fe;
+  color: #0369a1;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-weight: 600;
+}
+
+.feedback {
+  margin: 0;
+  color: #374151;
+  font-size: 0.95rem;
+  line-height: 1.4;
+}
+
+.leaderboardSection {
+  width: 100%;
+  max-width: 700px;
+  margin-top: 2rem;
+}
+
+.leaderboardTitle {
+  text-align: center;
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+}
+
+.leaderboardList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.leaderboardRow {
+  display: grid;
+  grid-template-columns: 60px 1fr 110px 80px;
+  gap: 0.5rem;
+  align-items: center;
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  padding: 0.75rem 1rem;
+  font-weight: 500;
+}
+
+.leaderboardMe {
+  border-color: var(--primary-color);
+  background-color: #eff6ff;
+}
+
+.rank {
+  font-weight: 700;
+  color: #6b7280;
+}
+
+.player {
+  word-break: break-word;
+}
+
+.youTag {
+  color: var(--primary-color);
+  font-weight: 700;
+}
+
+.attemptsCell {
+  font-size: 0.85rem;
+  color: #6b7280;
+  text-align: right;
+}
+
+.score {
+  font-weight: 700;
+  text-align: right;
+  color: #0369a1;
+}
+
+.emptyLeaderboard {
+  text-align: center;
+  color: #6b7280;
+  padding: 1.5rem;
+  background-color: #ffffff;
+  border: 1px dashed #d1d5db;
+  border-radius: 0.5rem;
+}
+
+.spinner {
+  width: 36px;
+  height: 36px;
+  border: 4px solid #d0e8ff;
+  border-top-color: #4da6ff;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 700px) {
+  .headerRow {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .imagesRow {
+    grid-template-columns: 1fr;
+  }
+
+  .leaderboardRow {
+    grid-template-columns: 50px 1fr 60px;
+  }
+
+  .attemptsCell {
+    display: none;
+  }
+}

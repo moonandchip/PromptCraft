@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 from app.auth import router as auth_router
+from app.challenge import router as challenge_router
 from app.db import dispose_engine
 from app.exceptions import AppException
 from app.response import ApiResponse
@@ -29,6 +30,7 @@ app.add_middleware(
 app.include_router(auth_router)
 app.include_router(stats_router)
 app.include_router(round_router)
+app.include_router(challenge_router)
 
 
 @app.exception_handler(AppException)

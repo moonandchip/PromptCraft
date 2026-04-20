@@ -19,9 +19,16 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
-    op.alter_column("user_profiles", "password_hash", existing_type=sa.String(), nullable=True)
-    op.alter_column("user_profiles", "total_score", existing_type=sa.Integer(), nullable=True)
-    op.alter_column("user_profiles", "role", existing_type=sa.String(), nullable=True)
+    bind = op.get_bind()
+    inspector = sa.inspect(bind)
+    columns = {col["name"] for col in inspector.get_columns("user_profiles")}
+
+    if "password_hash" in columns:
+        op.alter_column("user_profiles", "password_hash", existing_type=sa.String(), nullable=True)
+    if "total_score" in columns:
+        op.alter_column("user_profiles", "total_score", existing_type=sa.Integer(), nullable=True)
+    if "role" in columns:
+        op.alter_column("user_profiles", "role", existing_type=sa.String(), nullable=True)
 
 
 def downgrade() -> None:

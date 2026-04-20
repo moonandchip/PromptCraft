@@ -12,7 +12,75 @@
   font-size: 2rem;
   font-weight: 700;
   text-align: center;
-  margin-bottom: 2rem;
+  margin-bottom: 1.25rem;
+}
+
+.controlsRow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  width: 100%;
+  max-width: 700px;
+  margin-bottom: 1rem;
+}
+
+.controlLabel {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #374151;
+}
+
+.difficultySelect {
+  margin-left: 0.5rem;
+  padding: 0.4rem 0.65rem;
+  border: 2px solid #d1d5db;
+  border-radius: 0.5rem;
+  font-size: 0.95rem;
+  font-family: inherit;
+  background-color: #ffffff;
+  cursor: pointer;
+}
+
+.difficultySelect:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+.roundBadge {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.75rem;
+  background-color: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 9999px;
+  font-size: 0.9rem;
+}
+
+.badgeTitle {
+  font-weight: 600;
+  color: #111827;
+}
+
+.badgeDifficulty {
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.difficulty-easy {
+  color: #047857;
+}
+
+.difficulty-medium {
+  color: #b45309;
+}
+
+.difficulty-hard {
+  color: #b91c1c;
 }
 
 .imagesRow {
@@ -170,6 +238,74 @@
   padding: 0.25rem 0.75rem;
   border-radius: 9999px;
   font-weight: 500;
+}
+
+.feedback {
+  width: 100%;
+  max-width: 700px;
+  margin: 0.5rem 0 0;
+  padding: 0.75rem 1rem;
+  background-color: #f0f9ff;
+  border-left: 4px solid var(--primary-color);
+  color: #0c4a6e;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  border-radius: 0.25rem;
+}
+
+.targetPromptSection {
+  width: 100%;
+  max-width: 700px;
+  margin-top: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.targetPromptToggle {
+  background-color: #fff7ed;
+  color: #9a3412;
+  border: 2px solid #fed7aa;
+  border-radius: 0.5rem;
+  padding: 0.6rem 1rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+}
+
+.targetPromptToggle:hover {
+  background-color: #ffedd5;
+}
+
+.targetPromptCard {
+  background-color: #ffffff;
+  border: 1px solid #fed7aa;
+  border-left: 4px solid #f97316;
+  border-radius: 0.5rem;
+  padding: 0.85rem 1rem;
+}
+
+.targetPromptHeader {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.75rem;
+  color: #9a3412;
+  margin-bottom: 0.5rem;
+}
+
+.targetPromptText {
+  margin: 0 0 0.5rem;
+  color: #1f2937;
+  line-height: 1.5;
+}
+
+.targetPromptHint {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #6b7280;
+  font-style: italic;
 }
 
 .tryAgainButton {

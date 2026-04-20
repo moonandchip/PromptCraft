@@ -19,6 +19,13 @@ depends_on: Union[str, Sequence[str], None] = None
 
 
 def upgrade() -> None:
+    bind = op.get_bind()
+    inspector = sa.inspect(bind)
+    tables = set(inspector.get_table_names())
+
+    if "users" not in tables:
+        return
+
     op.rename_table("users", "user_profiles")
 
     op.alter_column("user_profiles", "username", new_column_name="display_name")

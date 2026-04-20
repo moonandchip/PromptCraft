@@ -14,6 +14,7 @@ def save_attempt(
     round_id: str,
     generated_image_url: str,
     similarity_score: float,
+    challenge_id: str | None = None,
 ) -> str:
     """Creates an attempt row for a submission.
 
@@ -38,6 +39,7 @@ def save_attempt(
         image_id=image_id,
         prompt_id=prompt_id,
         round_id=round_id,
+        challenge_id=challenge_id,
         generated_image_url=generated_image_url,
         similarity_score=similarity_score,
         time_taken=0,
