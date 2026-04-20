@@ -2,6 +2,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.round.data.entities import Attempt, Prompt
+from app.stats.data.entities import Round
 
 
 def get_user_stats_from_attempts(
@@ -11,12 +12,13 @@ def get_user_stats_from_attempts(
 ) -> dict:
     """Retrieves comprehensive user stats derived from the attempts table.
 
-    Returns a dict with keys: total_rounds, total_attempts, average_score,
-    best_score, and recent_attempts (list of dicts).
+    `total_rounds` counts play sessions: one per row in `rounds` (each
+    practice round start) plus one per distinct `challenge_id` the user
+    has played. Counting distinct `Attempt.round_id` would cap at the
+    number of unique round slugs, not sessions.
     """
     agg_query = (
         select(
-            func.count(func.distinct(Attempt.round_id)).label("total_rounds"),
             func.count(Attempt.id).label("total_attempts"),
             func.coalesce(func.avg(Attempt.similarity_score), 0).label("average_score"),
             func.coalesce(func.max(Attempt.similarity_score), 0).label("best_score"),
@@ -24,6 +26,15 @@ def get_user_stats_from_attempts(
         .where(Attempt.user_id == user_id)
     )
     row = session.execute(agg_query).one()
+
+    practice_rounds = session.execute(
+        select(func.count(Round.id)).where(Round.user_id == user_id)
+    ).scalar() or 0
+
+    challenge_rounds = session.execute(
+        select(func.count(func.distinct(Attempt.challenge_id)))
+        .where(Attempt.user_id == user_id, Attempt.challenge_id.isnot(None))
+    ).scalar() or 0
 
     recent_query = (
         select(
@@ -42,7 +53,7 @@ def get_user_stats_from_attempts(
     recent_rows = session.execute(recent_query).all()
 
     return {
-        "total_rounds": int(row.total_rounds or 0),
+        "total_rounds": int(practice_rounds) + int(challenge_rounds),
         "total_attempts": int(row.total_attempts or 0),
         "average_score": round(float(row.average_score or 0.0), 1),
         "best_score": float(row.best_score or 0.0),
