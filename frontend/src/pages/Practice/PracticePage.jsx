@@ -32,6 +32,8 @@ export default function PracticePage() {
   const [referenceError, setReferenceError] = useState(null);
   const [attemptHistory, setAttemptHistory] = useState(savedState?.attemptHistory ?? []);
   const [showAttemptHistory, setShowAttemptHistory] = useState(savedState?.showAttemptHistory ?? false);
+  const [feedback, setFeedback] = useState(savedState?.feedback ?? []);
+  const [showFeedback, setShowFeedback] = useState(savedState?.showFeedback ?? false);
   const loadReference = async () => {
     clearSavedPracticeState();
     try {
@@ -47,6 +49,8 @@ export default function PracticePage() {
       setReferenceError(null);
       setAttemptHistory([]);
       setShowAttemptHistory(false);
+      setFeedback([]);
+      setShowFeedback(false);
     } catch (err) {
       console.error("Failed to load reference image:", err);
       clearSavedPracticeState();
@@ -71,6 +75,8 @@ export default function PracticePage() {
     similarityScore,
     attemptHistory,
     showAttemptHistory,
+    feedback,
+    showFeedback,
   };
 
   localStorage.setItem(PRACTICE_STORAGE_KEY, JSON.stringify(stateToSave));
@@ -82,6 +88,8 @@ export default function PracticePage() {
   similarityScore,
   attemptHistory,
   showAttemptHistory,
+  feedback,
+  showFeedback,
 ]);
 
   const handlePromptChange = (e) => {
@@ -104,12 +112,15 @@ export default function PracticePage() {
 
       setGeneratedImage(result.data.generated_image_url);
       setSimilarityScore(Number(result.data.similarity_score));
+      setFeedback(result.data.feedback || []);
+      setShowFeedback(false);
       setAttemptHistory((prev) => [
         ...prev,
         {
           prompt: prompt.trim(),
           generatedImageUrl: result.data.generated_image_url,
           similarityScore: Number(result.data.similarity_score),
+          feedback: result.data.feedback || [],
           submittedAt: Date.now(),
         },
       ]);
@@ -126,6 +137,8 @@ export default function PracticePage() {
     setPrompt("");
     setGeneratedImage(null);
     setSimilarityScore(null);
+    setFeedback([]);
+    setShowFeedback(false);
     setError(null);
   };
 
@@ -223,6 +236,29 @@ export default function PracticePage() {
               {similarityScore.toFixed(1)} / 100
             </span>
           </div>
+
+          {feedback.length > 0 && (
+            <div className={styles.feedbackSection}>
+              <div className={styles.feedbackHeader}>
+                <h3 className={styles.feedbackTitle}>Hints</h3>
+                <button
+                  type="button"
+                  className={styles.feedbackToggle}
+                  onClick={() => setShowFeedback((prev) => !prev)}
+                >
+                  {showFeedback ? "Hide Feedback" : "Show"}
+                </button>
+              </div>
+
+              {showFeedback && (
+                <ul className={styles.feedbackList}>
+                  {feedback.map((tip, i) => (
+                    <li key={i} className={styles.feedbackItem}>{tip}</li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
 
           <div className={styles.resultButtons}>
             <button onClick={handleTryAgain} className={styles.tryAgainButton}>
