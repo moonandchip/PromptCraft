@@ -15,3 +15,4 @@ class StartRoundArgs:
     user_id: str
     user_email: str
     user_display_name: str | None = None
+    difficulty: str | None = None

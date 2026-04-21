@@ -1,6 +1,6 @@
 import logging
 
-from fastapi import Depends
+from fastapi import Depends, Query
 from sqlalchemy.orm import Session
 
 from app.auth.dependencies import get_current_user
@@ -19,11 +19,17 @@ logger = logging.getLogger(__name__)
 
 
 def start_endpoint(
+    difficulty: str | None = Query(default=None, pattern="^(easy|medium|hard)$"),
     current_user: UserResponse = Depends(get_current_user),
     session: Session = Depends(get_db_session),
 ) -> ApiResponse[RoundStartResponse]:
     try:
-        args = StartRoundArgs(user_id=current_user.id, user_email=current_user.email, user_display_name=current_user.name)
+        args = StartRoundArgs(
+            user_id=current_user.id,
+            user_email=current_user.email,
+            user_display_name=current_user.name,
+            difficulty=difficulty,
+        )
         result = start_round(session=session, args=args)
         return ApiResponse(data=result)
     except AppException:

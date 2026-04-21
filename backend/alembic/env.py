@@ -8,6 +8,7 @@ from alembic import context
 from app.db import Base
 import app.round.data.entities
 import app.stats.data.entities
+import app.challenge.data.entities
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

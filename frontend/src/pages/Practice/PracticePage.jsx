@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
 import { startRound, submitPrompt } from "../../api";
-import styles from "./PracticePage.module.css";
 import ErrorBanner from "../../components/ErrorBanner";
+import { scoreFeedback } from "../../utils/scoreFeedback";
+import styles from "./PracticePage.module.css";
 
 const PRACTICE_STORAGE_KEY = "promptcraft_practice_round_state";
+const DIFFICULTIES = ["any", "easy", "medium", "hard"];
+const DIFFICULTY_STORAGE_KEY = "promptcraft_practice_difficulty";
 
 function loadSavedPracticeState() {
   try {
@@ -20,10 +23,18 @@ function clearSavedPracticeState() {
   localStorage.removeItem(PRACTICE_STORAGE_KEY);
 }
 
+function loadSavedDifficulty() {
+  const value = localStorage.getItem(DIFFICULTY_STORAGE_KEY);
+  return DIFFICULTIES.includes(value) ? value : "any";
+}
+
 export default function PracticePage() {
   const savedState = loadSavedPracticeState();
   const [referenceImage, setReferenceImage] = useState(savedState?.referenceImage ?? null);
   const [referenceRoundId, setReferenceRoundId] = useState(savedState?.referenceRoundId ?? null);
+  const [roundTitle, setRoundTitle] = useState(savedState?.roundTitle ?? null);
+  const [roundDifficulty, setRoundDifficulty] = useState(savedState?.roundDifficulty ?? null);
+  const [targetPrompt, setTargetPrompt] = useState(savedState?.targetPrompt ?? null);
   const [generatedImage, setGeneratedImage] = useState(savedState?.generatedImage ?? null);
   const [prompt, setPrompt] = useState(savedState?.prompt ?? "");
   const [loadingGenerated, setLoadingGenerated] = useState(false);
@@ -32,14 +43,23 @@ export default function PracticePage() {
   const [referenceError, setReferenceError] = useState(null);
   const [attemptHistory, setAttemptHistory] = useState(savedState?.attemptHistory ?? []);
   const [showAttemptHistory, setShowAttemptHistory] = useState(savedState?.showAttemptHistory ?? false);
-  const loadReference = async () => {
+  const [showTargetPrompt, setShowTargetPrompt] = useState(false);
+  const [difficulty, setDifficulty] = useState(loadSavedDifficulty);
+
+  const loadReference = async (chosenDifficulty = difficulty) => {
     clearSavedPracticeState();
+    setShowTargetPrompt(false);
     try {
-      const data = await startRound();
+      const data = await startRound({
+        difficulty: chosenDifficulty === "any" ? undefined : chosenDifficulty,
+      });
       setReferenceImage(
         `/reference_images/${data.target_image_url.replace("/static/", "")}`,
       );
       setReferenceRoundId(data.round_id);
+      setRoundTitle(data.title ?? null);
+      setRoundDifficulty(data.difficulty ?? null);
+      setTargetPrompt(data.target_prompt ?? null);
       setGeneratedImage(null);
       setSimilarityScore(null);
       setPrompt("");
@@ -55,37 +75,51 @@ export default function PracticePage() {
   };
 
   useEffect(() => {
-  if (!savedState?.referenceRoundId || !savedState?.referenceImage) {
-    loadReference();
-  }
-}, []);
+    if (!savedState?.referenceRoundId || !savedState?.referenceImage) {
+      loadReference();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
-  if (!referenceRoundId || !referenceImage) return;
+    if (!referenceRoundId || !referenceImage) return;
 
-  const stateToSave = {
+    const stateToSave = {
+      referenceImage,
+      referenceRoundId,
+      roundTitle,
+      roundDifficulty,
+      targetPrompt,
+      generatedImage,
+      prompt,
+      similarityScore,
+      attemptHistory,
+      showAttemptHistory,
+    };
+
+    localStorage.setItem(PRACTICE_STORAGE_KEY, JSON.stringify(stateToSave));
+  }, [
     referenceImage,
     referenceRoundId,
+    roundTitle,
+    roundDifficulty,
+    targetPrompt,
     generatedImage,
     prompt,
     similarityScore,
     attemptHistory,
     showAttemptHistory,
-  };
-
-  localStorage.setItem(PRACTICE_STORAGE_KEY, JSON.stringify(stateToSave));
-}, [
-  referenceImage,
-  referenceRoundId,
-  generatedImage,
-  prompt,
-  similarityScore,
-  attemptHistory,
-  showAttemptHistory,
-]);
+  ]);
 
   const handlePromptChange = (e) => {
     setPrompt(e.target.value.slice(0, 2000));
+  };
+
+  const handleDifficultyChange = (e) => {
+    const value = e.target.value;
+    setDifficulty(value);
+    localStorage.setItem(DIFFICULTY_STORAGE_KEY, value);
+    loadReference(value);
   };
 
   const handleGenerate = async () => {
@@ -102,18 +136,18 @@ export default function PracticePage() {
         user_prompt: prompt.trim(),
       });
 
+      const score = Number(result.data.similarity_score);
       setGeneratedImage(result.data.generated_image_url);
-      setSimilarityScore(Number(result.data.similarity_score));
+      setSimilarityScore(score);
       setAttemptHistory((prev) => [
         ...prev,
         {
           prompt: prompt.trim(),
           generatedImageUrl: result.data.generated_image_url,
-          similarityScore: Number(result.data.similarity_score),
+          similarityScore: score,
           submittedAt: Date.now(),
         },
       ]);
-
     } catch (err) {
       console.error(err);
       setError(err.message || "Failed to generate image.");
@@ -130,66 +164,66 @@ export default function PracticePage() {
   };
 
   const handleNewRound = async () => {
-    await loadReference(); // starts a completely new round
+    await loadReference();
   };
 
   const hasResult = similarityScore !== null;
+  const hasAnyAttempt = attemptHistory.length > 0;
 
   return (
     <div className={styles.page}>
       <h1 className={styles.title}>Practice Mode</h1>
 
-      {/* Errors */}
+      <div className={styles.controlsRow}>
+        <label className={styles.controlLabel} htmlFor="practice-difficulty-select">
+          Difficulty
+        </label>
+        <select
+          id="practice-difficulty-select"
+          className={styles.difficultySelect}
+          value={difficulty}
+          onChange={handleDifficultyChange}
+          disabled={loadingGenerated}
+        >
+          <option value="any">Any</option>
+          <option value="easy">Easy</option>
+          <option value="medium">Medium</option>
+          <option value="hard">Hard</option>
+        </select>
+        {roundTitle && (
+          <div className={styles.roundBadge}>
+            <span className={styles.badgeTitle}>{roundTitle}</span>
+            {roundDifficulty && (
+              <span className={`${styles.badgeDifficulty} ${styles[`difficulty-${roundDifficulty}`]}`}>
+                {roundDifficulty}
+              </span>
+            )}
+          </div>
+        )}
+      </div>
+
       <ErrorBanner
         message={referenceError}
         onClose={() => setReferenceError(null)}
       />
       <ErrorBanner message={error} onClose={() => setError(null)} />
 
-      {/* Images */}
       <div className={styles.imagesRow}>
-        {/* Reference */}
         <div className={styles.imageBundle}>
           <div className={styles.label}>Reference Image</div>
           <div className={styles.imageWrapper}>
-            {referenceImage ? (
-              <img src={referenceImage} alt="Reference" />
-            ) : referenceError ? (
-              <span className={styles.placeholder}>
-                <span className={styles.emoji}>❌</span>
-                <span>{referenceError}</span>
-              </span>
-            ) : (
-              <span className={styles.placeholder}>
-                <div className={styles.spinner}></div>
-                <span>Loading reference...</span>
-              </span>
-            )}
+            {renderReferenceImage(referenceImage, referenceError, styles)}
           </div>
         </div>
 
-        {/* Generated */}
         <div className={styles.imageBundle}>
           <div className={styles.label}>Your Generated Image</div>
           <div className={styles.imageWrapper}>
-            {loadingGenerated ? (
-              <span className={styles.placeholder}>
-                <div className={styles.spinner}></div>
-                <span>Generating...</span>
-              </span>
-            ) : generatedImage ? (
-              <img src={generatedImage} alt="Generated" />
-            ) : (
-              <span className={styles.placeholder}>
-                <span className={styles.emoji}>✨</span>
-                <span>Your image will appear here.</span>
-              </span>
-            )}
+            {renderGeneratedImage(loadingGenerated, generatedImage, styles)}
           </div>
         </div>
       </div>
 
-      {/* Prompt */}
       <div className={styles.promptSection}>
         <label className={styles.promptLabel}>Your Prompt</label>
 
@@ -214,7 +248,6 @@ export default function PracticePage() {
         </div>
       </div>
 
-      {/* Result + Try Again + New Round */}
       {hasResult && (
         <>
           <div className={styles.scoreRow}>
@@ -223,6 +256,8 @@ export default function PracticePage() {
               {similarityScore.toFixed(1)} / 100
             </span>
           </div>
+
+          <p className={styles.feedback}>{scoreFeedback(similarityScore)}</p>
 
           <div className={styles.resultButtons}>
             <button onClick={handleTryAgain} className={styles.tryAgainButton}>
@@ -234,48 +269,111 @@ export default function PracticePage() {
           </div>
         </>
       )}
-       {attemptHistory.length > 0 && (
-  <div className={styles.attemptHistorySection}>
-    <button
-      type="button"
-      className={styles.attemptHistoryToggle}
-      onClick={() => setShowAttemptHistory((prev) => !prev)}
-    >
-      {showAttemptHistory
-        ? `Hide Previous Attempts (${attemptHistory.length})`
-        : `Show Previous Attempts (${attemptHistory.length})`}
-    </button>
 
-    {showAttemptHistory && (
-      <div className={styles.attemptHistoryList}>
-        {attemptHistory.map((attempt, index) => (
-          <div key={`${attempt.submittedAt}-${index}`} className={styles.attemptCard}>
-            <div className={styles.attemptHeader}>
-              <span className={styles.attemptTitle}>
-                Attempt {index + 1}
-              </span>
-              <span className={styles.attemptScore}>
-                {attempt.similarityScore.toFixed(1)} / 100
-              </span>
+      {hasAnyAttempt && targetPrompt && (
+        <div className={styles.targetPromptSection}>
+          <button
+            type="button"
+            className={styles.targetPromptToggle}
+            onClick={() => setShowTargetPrompt((prev) => !prev)}
+          >
+            {showTargetPrompt ? "Hide Target Prompt" : "Reveal Target Prompt"}
+          </button>
+          {showTargetPrompt && (
+            <div className={styles.targetPromptCard}>
+              <div className={styles.targetPromptHeader}>Target prompt</div>
+              <p className={styles.targetPromptText}>{targetPrompt}</p>
+              <p className={styles.targetPromptHint}>
+                Tip: compare this with your prompt — what details did you miss or
+                describe differently?
+              </p>
             </div>
+          )}
+        </div>
+      )}
 
-            <div className={styles.attemptPrompt}>
-              <strong>Prompt:</strong> {attempt.prompt}
-            </div>
+      {hasAnyAttempt && (
+        <div className={styles.attemptHistorySection}>
+          <button
+            type="button"
+            className={styles.attemptHistoryToggle}
+            onClick={() => setShowAttemptHistory((prev) => !prev)}
+          >
+            {showAttemptHistory
+              ? `Hide Previous Attempts (${attemptHistory.length})`
+              : `Show Previous Attempts (${attemptHistory.length})`}
+          </button>
 
-            <div className={styles.attemptImageWrapper}>
-              <img
-                src={attempt.generatedImageUrl}
-                alt={`Attempt ${index + 1}`}
-                className={styles.attemptImage}
-              />
+          {showAttemptHistory && (
+            <div className={styles.attemptHistoryList}>
+              {attemptHistory.map((attempt, index) => (
+                <div key={attempt.submittedAt} className={styles.attemptCard}>
+                  <div className={styles.attemptHeader}>
+                    <span className={styles.attemptTitle}>
+                      Attempt {index + 1}
+                    </span>
+                    <span className={styles.attemptScore}>
+                      {attempt.similarityScore.toFixed(1)} / 100
+                    </span>
+                  </div>
+
+                  <div className={styles.attemptPrompt}>
+                    <strong>Prompt:</strong> {attempt.prompt}
+                  </div>
+
+                  <div className={styles.attemptImageWrapper}>
+                    <img
+                      src={attempt.generatedImageUrl}
+                      alt={`Attempt ${index + 1}`}
+                      className={styles.attemptImage}
+                    />
+                  </div>
+                </div>
+              ))}
             </div>
-          </div>
-        ))}
-      </div>
-    )}
-  </div>
-)}
+          )}
+        </div>
+      )}
     </div>
+  );
+}
+
+function renderReferenceImage(referenceImage, referenceError, styles) {
+  if (referenceImage) {
+    return <img src={referenceImage} alt="Reference" />;
+  }
+  if (referenceError) {
+    return (
+      <span className={styles.placeholder}>
+        <span className={styles.emoji}>❌</span>
+        <span>{referenceError}</span>
+      </span>
+    );
+  }
+  return (
+    <span className={styles.placeholder}>
+      <div className={styles.spinner}></div>
+      <span>Loading reference...</span>
+    </span>
+  );
+}
+
+function renderGeneratedImage(loadingGenerated, generatedImage, styles) {
+  if (loadingGenerated) {
+    return (
+      <span className={styles.placeholder}>
+        <div className={styles.spinner}></div>
+        <span>Generating...</span>
+      </span>
+    );
+  }
+  if (generatedImage) {
+    return <img src={generatedImage} alt="Generated" />;
+  }
+  return (
+    <span className={styles.placeholder}>
+      <span className={styles.emoji}>✨</span>
+      <span>Your image will appear here.</span>
+    </span>
   );
 }
