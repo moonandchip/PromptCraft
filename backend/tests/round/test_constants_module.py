@@ -59,6 +59,12 @@ class TestRoundConstantsModule(unittest.TestCase):
             self.assertIn("title", round_def)
             self.assertIn("difficulty", round_def)
             self.assertIn("reference_image", round_def)
+            self.assertIn("target_prompt", round_def)
+
+    def test_each_round_has_non_empty_target_prompt(self):
+        for round_def in constants.ROUNDS:
+            self.assertIsInstance(round_def["target_prompt"], str)
+            self.assertGreater(len(round_def["target_prompt"]), 0)
 
     def test_round_ids_are_unique(self):
         ids = [r["id"] for r in constants.ROUNDS]

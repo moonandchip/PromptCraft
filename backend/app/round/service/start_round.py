@@ -13,9 +13,19 @@ from ..types.args import StartRoundArgs
 
 logger = logging.getLogger(__name__)
 
+_VALID_DIFFICULTIES = {"easy", "medium", "hard"}
+
+
+def _select_round(difficulty: str | None) -> dict:
+    if difficulty and difficulty.lower() in _VALID_DIFFICULTIES:
+        candidates = [r for r in ROUNDS if r["difficulty"] == difficulty.lower()]
+        if candidates:
+            return choice(candidates)
+    return choice(ROUNDS)
+
 
 def start_round(session: Session, args: StartRoundArgs) -> RoundStartResponse:
-    selected_round = choice(ROUNDS)
+    selected_round = _select_round(args.difficulty)
     target_image_url = f"/static/{selected_round['reference_image']}"
 
     try:
@@ -59,4 +69,7 @@ def start_round(session: Session, args: StartRoundArgs) -> RoundStartResponse:
     return RoundStartResponse(
         round_id=selected_round["id"],
         target_image_url=target_image_url,
+        title=selected_round["title"],
+        difficulty=selected_round["difficulty"],
+        target_prompt=selected_round.get("target_prompt", ""),
     )

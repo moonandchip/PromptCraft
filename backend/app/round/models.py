@@ -15,6 +15,9 @@ class RoundSubmitResponse(BaseModel):
 class RoundStartResponse(BaseModel):
     round_id: str
     target_image_url: str
+    title: str
+    difficulty: str
+    target_prompt: str
 
 
 class RoundInfo(BaseModel):
@@ -22,6 +25,7 @@ class RoundInfo(BaseModel):
     title: str
     difficulty: str
     reference_image: str
+    target_prompt: str | None = None
 
 
 class RoundAttemptResponse(BaseModel):

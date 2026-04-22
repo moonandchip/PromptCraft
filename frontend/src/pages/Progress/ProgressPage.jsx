@@ -1,7 +1,45 @@
 import { useEffect, useState } from "react";
-import { getStats } from "../../api";
-import styles from "./ProgressPage.module.css";
+import { getRoundAttempts, getRoundHistory, getStats } from "../../api";
 import ErrorBanner from "../../components/ErrorBanner";
+import styles from "./ProgressPage.module.css";
+
+function resolveReferenceUrl(targetImageUrl) {
+  if (!targetImageUrl) return null;
+  return `/reference_images/${targetImageUrl.replace("/static/", "")}`;
+}
+
+function renderAttemptsPanel(isLoading, attempts, styles) {
+  if (isLoading) {
+    return <div className={styles.attemptsLoading}>Loading attempts...</div>;
+  }
+  if (attempts.length === 0) {
+    return <div className={styles.attemptsLoading}>No attempts found.</div>;
+  }
+  return (
+    <ol className={styles.attemptsList}>
+      {attempts.map((attempt) => (
+        <li key={attempt.attempt_number} className={styles.attemptCard}>
+          <div className={styles.attemptHeader}>
+            <span>Attempt {attempt.attempt_number}</span>
+            <span className={styles.attemptScore}>
+              {attempt.similarity_score.toFixed(1)} / 100
+            </span>
+          </div>
+          <div className={styles.attemptPrompt}>
+            <strong>Prompt:</strong> {attempt.prompt}
+          </div>
+          {attempt.generated_image_url && (
+            <img
+              src={attempt.generated_image_url}
+              alt={`Attempt ${attempt.attempt_number}`}
+              className={styles.attemptImage}
+            />
+          )}
+        </li>
+      ))}
+    </ol>
+  );
+}
 
 const CHART_WIDTH = 640;
 const CHART_HEIGHT = 240;
@@ -83,29 +121,61 @@ function buildChart(points) {
 
 export default function ProgressPage() {
   const [stats, setStats] = useState(null);
+  const [history, setHistory] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [expandedRoundId, setExpandedRoundId] = useState(null);
+  const [attemptsByRound, setAttemptsByRound] = useState({});
+  const [loadingRoundId, setLoadingRoundId] = useState(null);
+  const [attemptError, setAttemptError] = useState(null);
 
   useEffect(() => {
-    const fetchStats = async () => {
+    let cancelled = false;
+    const load = async () => {
       setLoading(true);
       setError(null);
       try {
-        const data = await getStats();
-        if (!data) throw new Error("Failed to load stats.");
-        setStats(data);
+        const [statsData, historyData] = await Promise.all([
+          getStats(),
+          getRoundHistory(),
+        ]);
+        if (cancelled) return;
+        setStats(statsData);
+        setHistory(historyData ?? []);
       } catch (err) {
-        setError(err.message || "Error loading stats.");
+        if (!cancelled) setError(err.message || "Error loading progress.");
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
-
-    fetchStats();
+    load();
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
+  const toggleRound = async (roundId) => {
+    if (expandedRoundId === roundId) {
+      setExpandedRoundId(null);
+      return;
+    }
+    setExpandedRoundId(roundId);
+    if (attemptsByRound[roundId]) return;
+
+    setLoadingRoundId(roundId);
+    setAttemptError(null);
+    try {
+      const attempts = await getRoundAttempts(roundId);
+      setAttemptsByRound((prev) => ({ ...prev, [roundId]: attempts ?? [] }));
+    } catch (err) {
+      setAttemptError(err.message || "Failed to load attempts for this round.");
+    } finally {
+      setLoadingRoundId(null);
+    }
+  };
+
   if (loading) {
-    return <div className={styles.message}>Loading stats...</div>;
+    return <div className={styles.message}>Loading progress...</div>;
   }
 
   const scoreTrend = (stats?.recent_attempts ?? [])
@@ -124,14 +194,17 @@ export default function ProgressPage() {
     <div className={styles.container}>
       <h1 className={styles.title}>My Progress</h1>
 
-      {/* Error Banner (does NOT block page) */}
       <ErrorBanner message={error} onClose={() => setError(null)} />
 
       {stats && (
-        <>
+        <div className={styles.statsBlock}>
           <div className={styles.stat}>
             <span>Rounds Played:</span>
             <span>{stats.total_rounds}</span>
+          </div>
+          <div className={styles.stat}>
+            <span>Total Attempts:</span>
+            <span>{stats.total_attempts}</span>
           </div>
           <div className={styles.stat}>
             <span>Average Score:</span>
@@ -145,80 +218,63 @@ export default function ProgressPage() {
             <span>Best Score:</span>
             <span>{formatScore(stats.best_score)}</span>
           </div>
-          <section className={styles.chartSection} aria-labelledby="score-chart-title">
-            <div className={styles.chartHeader}>
-              <div>
-                <h2 id="score-chart-title" className={styles.chartTitle}>
-                  Score Trend
-                </h2>
-              </div>
-            </div>
+        </div>
+      )}
 
-            {scoreTrend.length > 0 ? (
-              <>
-                <div className={styles.chartWrapper}>
-                  <svg
-                    viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`}
-                    className={styles.chart}
-                    role="img"
-                    aria-label="Line chart showing score improvement over time"
-                  >
-                    {yAxisTicks.map((tick) => (
-                      <g key={tick.value}>
-                        <line
-                          x1={CHART_PADDING}
-                          x2={CHART_WIDTH - CHART_PADDING}
-                          y1={tick.y}
-                          y2={tick.y}
-                          className={styles.gridLine}
-                        />
-                        <text
-                          x={CHART_PADDING - 10}
-                          y={tick.y + 4}
-                          className={styles.axisLabel}
-                        >
-                          {tick.value}
-                        </text>
-                      </g>
-                    ))}
+      <h2 className={styles.subtitle}>Round History</h2>
+      <ErrorBanner message={attemptError} onClose={() => setAttemptError(null)} />
 
-                    <path d={areaPath} className={styles.areaPath} />
-                    <path d={linePath} className={styles.linePath} />
-
-                    {chartPoints.map((point) => (
-                      <g key={point.id}>
-                        <circle
-                          cx={point.x}
-                          cy={point.y}
-                          r="5"
-                          className={styles.dataPoint}
-                        />
-                        <title>{`${point.label}: ${formatScore(point.score)} / 100`}</title>
-                      </g>
-                    ))}
-                  </svg>
-                </div>
-
-                <div className={styles.xAxisLabels} aria-hidden="true">
-                  {scoreTrend.map((point, index) => (
-                    <span key={point.id} className={styles.xAxisLabel}>
-                      {shouldShowXAxisLabel(index, scoreTrend.length) ? index + 1 : ""}
+      {history.length === 0 ? (
+        <div className={styles.emptyState}>
+          You haven&apos;t played any rounds yet. Head to Practice to start.
+        </div>
+      ) : (
+        <ul className={styles.historyList}>
+          {history.map((round) => {
+            const isExpanded = expandedRoundId === round.round_id;
+            const attempts = attemptsByRound[round.round_id] ?? [];
+            const isLoadingAttempts = loadingRoundId === round.round_id;
+            return (
+              <li key={round.round_id} className={styles.historyItem}>
+                <button
+                  type="button"
+                  className={styles.historyHeader}
+                  onClick={() => toggleRound(round.round_id)}
+                  aria-expanded={isExpanded}
+                >
+                  <img
+                    src={resolveReferenceUrl(round.target_image_url)}
+                    alt={round.title}
+                    className={styles.thumb}
+                  />
+                  <div className={styles.historyMeta}>
+                    <span className={styles.roundTitle}>{round.title}</span>
+                    <span className={`${styles.difficultyTag} ${styles[`difficulty-${round.difficulty}`]}`}>
+                      {round.difficulty}
                     </span>
-                  ))}
-                </div>
+                  </div>
+                  <div className={styles.historyStats}>
+                    <span className={styles.historyBest}>
+                      Best: {round.best_score.toFixed(1)}
+                    </span>
+                    <span className={styles.historyCount}>
+                      {round.attempt_count === 1
+                        ? "1 attempt"
+                        : `${round.attempt_count} attempts`}
+                    </span>
+                  </div>
+                  <span className={styles.chevron}>{isExpanded ? "▾" : "▸"}</span>
+                </button>
 
-                <div className={styles.chartFooter}>
-                  <span>Earlier attempts</span>
-                  <span>Later attempts</span>
-                </div>
-              </>
-            ) : (
-              <div className={styles.emptyChart}>
-                Complete a round to start tracking your scores over time.
-              </div>
-            )}
-          </section>
-        </>
+                {isExpanded && (
+                  <div className={styles.attemptsPanel}>
+                    {renderAttemptsPanel(isLoadingAttempts, attempts, styles)}
+                  </div>
+                )}
+              </li>
+            );
+          })}
+        </ul>
       )}
     </div>
   );
