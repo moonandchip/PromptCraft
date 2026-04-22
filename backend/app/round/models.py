@@ -9,6 +9,7 @@ class RoundSubmitRequest(BaseModel):
 class RoundSubmitResponse(BaseModel):
     generated_image_url: str
     similarity_score: float = 0.0
+    feedback: list[str] = []
 
 
 class RoundStartResponse(BaseModel):

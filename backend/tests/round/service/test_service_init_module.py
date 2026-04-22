@@ -4,6 +4,7 @@ from app.round.service import (
     GenerationError,
     compute_similarity_score,
     generate_image,
+    generate_prompt_feedback,
     get_round_by_id,
     get_round_attempts,
     get_rounds,
@@ -18,6 +19,7 @@ from app.round.service.generate_image import GenerationError as GenerationErrorI
 from app.round.service.generate_image import generate_image as generate_image_impl
 from app.round.service.start_round import start_round as start_round_impl
 from app.round.service.submit_round import submit_round as submit_round_impl
+from app.round.service.prompt_feedback import generate_prompt_feedback as generate_prompt_feedback_impl
 
 
 class TestRoundServiceInitModule(unittest.TestCase):
@@ -44,3 +46,6 @@ class TestRoundServiceInitModule(unittest.TestCase):
 
     def test_service_init_re_exports_submit_round(self):
         self.assertIs(submit_round, submit_round_impl)
+
+    def test_service_init_re_exports_generate_prompt_feedback(self):
+        self.assertIs(generate_prompt_feedback, generate_prompt_feedback_impl)

@@ -8,6 +8,7 @@ from app.round.types.args import SubmitRoundArgs
 
 
 class TestSubmitRound(unittest.TestCase):
+    @patch("app.round.service.submit_round.generate_prompt_feedback", autospec=True, return_value=["tip1"])
     @patch("app.round.service.submit_round.upsert_user_profile", autospec=True)
     @patch("app.round.service.submit_round.save_submission", autospec=True)
     @patch("app.round.service.submit_round.compute_similarity_score", autospec=True)
@@ -20,6 +21,7 @@ class TestSubmitRound(unittest.TestCase):
         mock_compute_similarity_score,
         mock_save_submission,
         mock_upsert_user_profile,
+        mock_generate_prompt_feedback,
     ):
         session = MagicMock()
         mock_get_round_by_id.return_value = {
@@ -37,6 +39,7 @@ class TestSubmitRound(unittest.TestCase):
 
         self.assertEqual(response.generated_image_url, "https://example.com/generated.jpg")
         self.assertEqual(response.similarity_score, 72.5)
+        self.assertEqual(response.feedback, ["tip1"])
         mock_upsert_user_profile.assert_called_once_with(
             session,
             user_id="user-uuid-1234",
@@ -85,6 +88,7 @@ class TestSubmitRound(unittest.TestCase):
         self.assertEqual(ctx.exception.status_code, 502)
         self.assertEqual(ctx.exception.message, "Image generation failed")
 
+    @patch("app.round.service.submit_round.generate_prompt_feedback", autospec=True, return_value=[])
     @patch("app.round.service.submit_round.upsert_user_profile", autospec=True)
     @patch("app.round.service.submit_round.save_submission", autospec=True)
     @patch("app.round.service.submit_round.compute_similarity_score", autospec=True)
@@ -97,6 +101,7 @@ class TestSubmitRound(unittest.TestCase):
         mock_compute_similarity_score,
         mock_save_submission,
         mock_upsert_user_profile,
+        mock_generate_prompt_feedback,
     ):
         session = MagicMock()
         mock_get_round_by_id.return_value = {
@@ -118,6 +123,7 @@ class TestSubmitRound(unittest.TestCase):
         self.assertEqual(kwargs["round_id"], "ancient-temple")
         self.assertEqual(kwargs["generated_image_url"], "https://example.com/generated.jpg")
 
+    @patch("app.round.service.submit_round.generate_prompt_feedback", autospec=True, return_value=[])
     @patch("app.round.service.submit_round.upsert_user_profile", autospec=True)
     @patch("app.round.service.submit_round.save_submission", autospec=True)
     @patch("app.round.service.submit_round.compute_similarity_score", autospec=True)
@@ -130,6 +136,7 @@ class TestSubmitRound(unittest.TestCase):
         mock_compute_similarity_score,
         mock_save_submission,
         mock_upsert_user_profile,
+        mock_generate_prompt_feedback,
     ):
         mock_get_round_by_id.return_value = {
             "id": "ancient-temple",

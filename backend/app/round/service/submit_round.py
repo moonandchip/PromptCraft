@@ -13,6 +13,7 @@ from ..types.args import SubmitRoundArgs
 from .get_round_by_id import get_round_by_id
 from .clip_scoring import compute_similarity_score
 from .generate_image import GenerationError, generate_image
+from .prompt_feedback import generate_prompt_feedback
 
 logger = logging.getLogger(__name__)
 _STATIC_DIR = Path(__file__).resolve().parent.parent.parent / "static"
@@ -68,6 +69,19 @@ def submit_round(session: Session, args: SubmitRoundArgs) -> RoundSubmitResponse
             RoundError.SAVE_FAILED, message="Failed to save submission",
         ) from exc
 
+    feedback: list[str] = []
+    try:
+        feedback = generate_prompt_feedback(
+            reference_image_path=reference_path,
+            user_prompt=args.user_prompt,
+            similarity_score=similarity_score,
+        )
+    except Exception as exc:
+        logger.error(
+            "Prompt feedback failed; returning empty feedback",
+            extra={"channel": CHANNEL, "feature": SUBMIT_ROUND_FEATURE, "error": str(exc), "user": args.user_email},
+        )
+
     logger.info(
         "Round submitted successfully",
         extra={
@@ -76,4 +90,4 @@ def submit_round(session: Session, args: SubmitRoundArgs) -> RoundSubmitResponse
         },
     )
 
-    return RoundSubmitResponse(generated_image_url=image_url, similarity_score=similarity_score)
+    return RoundSubmitResponse(generated_image_url=image_url, similarity_score=similarity_score, feedback=feedback)

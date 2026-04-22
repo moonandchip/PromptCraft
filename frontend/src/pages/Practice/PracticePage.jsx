@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import { startRound, submitPrompt } from "../../api";
 import ErrorBanner from "../../components/ErrorBanner";
-import { scoreFeedback } from "../../utils/scoreFeedback";
 import styles from "./PracticePage.module.css";
 
 const PRACTICE_STORAGE_KEY = "promptcraft_practice_round_state";
@@ -30,6 +29,7 @@ function loadSavedDifficulty() {
 
 export default function PracticePage() {
   const savedState = loadSavedPracticeState();
+
   const [referenceImage, setReferenceImage] = useState(savedState?.referenceImage ?? null);
   const [referenceRoundId, setReferenceRoundId] = useState(savedState?.referenceRoundId ?? null);
   const [roundTitle, setRoundTitle] = useState(savedState?.roundTitle ?? null);
@@ -43,16 +43,18 @@ export default function PracticePage() {
   const [referenceError, setReferenceError] = useState(null);
   const [attemptHistory, setAttemptHistory] = useState(savedState?.attemptHistory ?? []);
   const [showAttemptHistory, setShowAttemptHistory] = useState(savedState?.showAttemptHistory ?? false);
-  const [showTargetPrompt, setShowTargetPrompt] = useState(false);
+  const [feedback, setFeedback] = useState(savedState?.feedback ?? []);
+  const [showFeedback, setShowFeedback] = useState(savedState?.showFeedback ?? true);
   const [difficulty, setDifficulty] = useState(loadSavedDifficulty);
 
   const loadReference = async (chosenDifficulty = difficulty) => {
     clearSavedPracticeState();
-    setShowTargetPrompt(false);
+
     try {
       const data = await startRound({
         difficulty: chosenDifficulty === "any" ? undefined : chosenDifficulty,
       });
+
       setReferenceImage(
         `/reference_images/${data.target_image_url.replace("/static/", "")}`,
       );
@@ -67,6 +69,8 @@ export default function PracticePage() {
       setReferenceError(null);
       setAttemptHistory([]);
       setShowAttemptHistory(false);
+      setFeedback([]);
+      setShowFeedback(true);
     } catch (err) {
       console.error("Failed to load reference image:", err);
       clearSavedPracticeState();
@@ -95,6 +99,8 @@ export default function PracticePage() {
       similarityScore,
       attemptHistory,
       showAttemptHistory,
+      feedback,
+      showFeedback,
     };
 
     localStorage.setItem(PRACTICE_STORAGE_KEY, JSON.stringify(stateToSave));
@@ -109,6 +115,8 @@ export default function PracticePage() {
     similarityScore,
     attemptHistory,
     showAttemptHistory,
+    feedback,
+    showFeedback,
   ]);
 
   const handlePromptChange = (e) => {
@@ -137,14 +145,19 @@ export default function PracticePage() {
       });
 
       const score = Number(result.data.similarity_score);
+
       setGeneratedImage(result.data.generated_image_url);
       setSimilarityScore(score);
+      setFeedback(result.data.feedback || []);
+      setShowFeedback(true);
+
       setAttemptHistory((prev) => [
         ...prev,
         {
           prompt: prompt.trim(),
           generatedImageUrl: result.data.generated_image_url,
           similarityScore: score,
+          feedback: result.data.feedback || [],
           submittedAt: Date.now(),
         },
       ]);
@@ -160,6 +173,8 @@ export default function PracticePage() {
     setPrompt("");
     setGeneratedImage(null);
     setSimilarityScore(null);
+    setFeedback([]);
+    setShowFeedback(true);
     setError(null);
   };
 
@@ -190,6 +205,7 @@ export default function PracticePage() {
           <option value="medium">Medium</option>
           <option value="hard">Hard</option>
         </select>
+
         {roundTitle && (
           <div className={styles.roundBadge}>
             <span className={styles.badgeTitle}>{roundTitle}</span>
@@ -257,7 +273,30 @@ export default function PracticePage() {
             </span>
           </div>
 
-          <p className={styles.feedback}>{scoreFeedback(similarityScore)}</p>
+          {feedback.length > 0 && (
+            <div className={styles.feedbackSection}>
+              <div className={styles.feedbackHeader}>
+                <h3 className={styles.feedbackTitle}>Hints</h3>
+                <button
+                  type="button"
+                  className={styles.feedbackToggle}
+                  onClick={() => setShowFeedback((prev) => !prev)}
+                >
+                  {showFeedback ? "Hide Feedback" : "Show Hints"}
+                </button>
+              </div>
+
+              {showFeedback && (
+                <ul className={styles.feedbackList}>
+                  {feedback.map((tip, i) => (
+                    <li key={i} className={styles.feedbackItem}>
+                      {tip}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          )}
 
           <div className={styles.resultButtons}>
             <button onClick={handleTryAgain} className={styles.tryAgainButton}>
@@ -268,28 +307,6 @@ export default function PracticePage() {
             </button>
           </div>
         </>
-      )}
-
-      {hasAnyAttempt && targetPrompt && (
-        <div className={styles.targetPromptSection}>
-          <button
-            type="button"
-            className={styles.targetPromptToggle}
-            onClick={() => setShowTargetPrompt((prev) => !prev)}
-          >
-            {showTargetPrompt ? "Hide Target Prompt" : "Reveal Target Prompt"}
-          </button>
-          {showTargetPrompt && (
-            <div className={styles.targetPromptCard}>
-              <div className={styles.targetPromptHeader}>Target prompt</div>
-              <p className={styles.targetPromptText}>{targetPrompt}</p>
-              <p className={styles.targetPromptHint}>
-                Tip: compare this with your prompt — what details did you miss or
-                describe differently?
-              </p>
-            </div>
-          )}
-        </div>
       )}
 
       {hasAnyAttempt && (

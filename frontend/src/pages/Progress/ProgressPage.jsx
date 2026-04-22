@@ -41,6 +41,84 @@ function renderAttemptsPanel(isLoading, attempts, styles) {
   );
 }
 
+const CHART_WIDTH = 640;
+const CHART_HEIGHT = 240;
+const CHART_PADDING = 28;
+
+function formatScore(score) {
+  return Number(score ?? 0).toFixed(1);
+}
+
+function shouldShowXAxisLabel(index, total) {
+  if (total <= 6) {
+    return true;
+  }
+
+  if (index === 0 || index === total - 1) {
+    return true;
+  }
+
+  const interval = Math.ceil(total / 5);
+  return index % interval === 0;
+}
+
+function buildChart(points) {
+  if (!points.length) {
+    return {
+      linePath: "",
+      areaPath: "",
+      chartPoints: [],
+      yAxisTicks: [],
+    };
+  }
+
+  const innerWidth = CHART_WIDTH - CHART_PADDING * 2;
+  const innerHeight = CHART_HEIGHT - CHART_PADDING * 2;
+  const maxScore = 100;
+  const minScore = 0;
+
+  const chartPoints = points.map((point, index) => {
+    const x =
+      points.length === 1
+        ? CHART_WIDTH / 2
+        : CHART_PADDING + (index / (points.length - 1)) * innerWidth;
+    const normalizedScore = (point.score - minScore) / (maxScore - minScore || 1);
+    const y = CHART_HEIGHT - CHART_PADDING - normalizedScore * innerHeight;
+
+    return {
+      ...point,
+      x,
+      y,
+    };
+  });
+
+  const linePath = chartPoints
+    .map((point, index) => `${index === 0 ? "M" : "L"} ${point.x} ${point.y}`)
+    .join(" ");
+
+  const areaPath = [
+    `M ${chartPoints[0].x} ${CHART_HEIGHT - CHART_PADDING}`,
+    ...chartPoints.map((point) => `L ${point.x} ${point.y}`),
+    `L ${chartPoints[chartPoints.length - 1].x} ${CHART_HEIGHT - CHART_PADDING}`,
+    "Z",
+  ].join(" ");
+
+  const yAxisTicks = [0, 25, 50, 75, 100].map((value) => ({
+    value,
+    y:
+      CHART_HEIGHT -
+      CHART_PADDING -
+      ((value - minScore) / (maxScore - minScore || 1)) * innerHeight,
+  }));
+
+  return {
+    linePath,
+    areaPath,
+    chartPoints,
+    yAxisTicks,
+  };
+}
+
 export default function ProgressPage() {
   const [stats, setStats] = useState(null);
   const [history, setHistory] = useState([]);
@@ -100,6 +178,18 @@ export default function ProgressPage() {
     return <div className={styles.message}>Loading progress...</div>;
   }
 
+  const scoreTrend = (stats?.recent_attempts ?? [])
+    .slice()
+    .reverse()
+    .map((attempt, index) => ({
+      id: `${attempt.created_at ?? "attempt"}-${attempt.attempt_number}-${index}`,
+      label: `Attempt ${index + 1}`,
+      score: Number(attempt.similarity_score ?? 0),
+      createdAt: attempt.created_at,
+    }));
+
+  const { linePath, areaPath, chartPoints, yAxisTicks } = buildChart(scoreTrend);
+
   return (
     <div className={styles.container}>
       <h1 className={styles.title}>My Progress</h1>
@@ -118,11 +208,15 @@ export default function ProgressPage() {
           </div>
           <div className={styles.stat}>
             <span>Average Score:</span>
-            <span>{stats.average_score}</span>
+            <span>{formatScore(stats.average_score)}</span>
+          </div>
+          <div className={styles.stat}>
+            <span>Total Attempts:</span>
+            <span>{stats.total_attempts}</span>
           </div>
           <div className={styles.stat}>
             <span>Best Score:</span>
-            <span>{stats.best_score}</span>
+            <span>{formatScore(stats.best_score)}</span>
           </div>
         </div>
       )}
