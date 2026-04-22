@@ -196,29 +196,101 @@ export default function ProgressPage() {
 
       <ErrorBanner message={error} onClose={() => setError(null)} />
 
-      {stats && (
-        <div className={styles.statsBlock}>
-          <div className={styles.stat}>
-            <span>Rounds Played:</span>
-            <span>{stats.total_rounds}</span>
+            {stats && (
+        <>
+          <div className={styles.statsBlock}>
+            <div className={styles.stat}>
+              <span>Rounds Played:</span>
+              <span>{stats.total_rounds}</span>
+            </div>
+            <div className={styles.stat}>
+              <span>Total Attempts:</span>
+              <span>{stats.total_attempts}</span>
+            </div>
+            <div className={styles.stat}>
+              <span>Average Score:</span>
+              <span>{formatScore(stats.average_score)}</span>
+            </div>
+            <div className={styles.stat}>
+              <span>Best Score:</span>
+              <span>{formatScore(stats.best_score)}</span>
+            </div>
           </div>
-          <div className={styles.stat}>
-            <span>Total Attempts:</span>
-            <span>{stats.total_attempts}</span>
-          </div>
-          <div className={styles.stat}>
-            <span>Average Score:</span>
-            <span>{formatScore(stats.average_score)}</span>
-          </div>
-          <div className={styles.stat}>
-            <span>Total Attempts:</span>
-            <span>{stats.total_attempts}</span>
-          </div>
-          <div className={styles.stat}>
-            <span>Best Score:</span>
-            <span>{formatScore(stats.best_score)}</span>
-          </div>
-        </div>
+
+          <section className={styles.chartSection} aria-labelledby="score-chart-title">
+            <div className={styles.chartHeader}>
+              <div>
+                <h2 id="score-chart-title" className={styles.chartTitle}>
+                  Score Trend
+                </h2>
+              </div>
+            </div>
+
+            {scoreTrend.length > 0 ? (
+              <>
+                <div className={styles.chartWrapper}>
+                  <svg
+                    viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`}
+                    className={styles.chart}
+                    role="img"
+                    aria-label="Line chart showing score improvement over time"
+                  >
+                    {yAxisTicks.map((tick) => (
+                      <g key={tick.value}>
+                        <line
+                          x1={CHART_PADDING}
+                          x2={CHART_WIDTH - CHART_PADDING}
+                          y1={tick.y}
+                          y2={tick.y}
+                          className={styles.gridLine}
+                        />
+                        <text
+                          x={CHART_PADDING - 10}
+                          y={tick.y + 4}
+                          className={styles.axisLabel}
+                        >
+                          {tick.value}
+                        </text>
+                      </g>
+                    ))}
+
+                    <path d={areaPath} className={styles.areaPath} />
+                    <path d={linePath} className={styles.linePath} />
+
+                    {chartPoints.map((point) => (
+                      <g key={point.id}>
+                        <circle
+                          cx={point.x}
+                          cy={point.y}
+                          r="5"
+                          className={styles.dataPoint}
+                        />
+                        <title>{`${point.label}: ${formatScore(point.score)} / 100`}</title>
+                      </g>
+                    ))}
+                  </svg>
+                </div>
+
+                <div className={styles.xAxisLabels} aria-hidden="true">
+                  {scoreTrend.map((point, index) => (
+                    <span key={point.id} className={styles.xAxisLabel}>
+                      {shouldShowXAxisLabel(index, scoreTrend.length) ? index + 1 : ""}
+                    </span>
+                  ))}
+                </div>
+
+                <div className={styles.chartFooter}>
+                  <span>Earlier attempts</span>
+                  <span>Later attempts</span>
+                </div>
+              </>
+            ) : (
+              <div className={styles.emptyChart}>
+                Complete a round to start tracking your scores over time.
+              </div>
+            )}
+          </section>
+        </>
       )}
 
       <h2 className={styles.subtitle}>Round History</h2>
