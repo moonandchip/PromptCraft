@@ -5,8 +5,8 @@ PromptCraft is a prompt-engineering practice game. Players are shown a reference
 ## Tech Stack
 - Frontend: React (Vite)
 - Backend: FastAPI (Python)
-- Scoring (planned): CLIP / embedding similarity
-- Image generation (planned): API-based (for example Leonardo)
+- Scoring: CLIP / embedding similarity
+- Image generation: API-based (for example Leonardo)
 
 ## Repo Structure
 - `frontend/` React UI
