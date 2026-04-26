@@ -65,6 +65,13 @@ ROUNDS: list[dict] = [
         "reference_image": "green-field.jpg",
         "target_prompt": "A wide open green field under a bright blue sky, soft clouds, natural lighting, simple landscape",
     },
+    {
+    "id": "red-apple",
+    "title": "Red Apple",
+    "difficulty": "easy",
+    "reference_image": "red-apple.jpg",
+    "target_prompt": "A single red apple centered on a plain white background, soft lighting, minimal composition, high detail, photorealistic",
+    },
 
     # MEDIUM
     {
