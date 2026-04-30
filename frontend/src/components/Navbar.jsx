@@ -15,7 +15,10 @@ export default function Navbar() {
     <nav className={styles.navbar}>
       <div className={styles.leftContainer}>
         <div className={styles.logo}>
-          <Link to="/">PromptCraft</Link>
+          <Link to="/">
+          <span className={styles.logoPrimary}>Prompt</span>
+          <span className={styles.logoAccent}>Craft</span>
+          </Link>
         </div>
         <div className={styles.mainLinks}>
           <Link to="/how-to-play" className={styles.navLink}>
