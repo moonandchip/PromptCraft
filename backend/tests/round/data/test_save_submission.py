@@ -10,7 +10,7 @@ class TestSaveSubmission(unittest.TestCase):
     @patch("app.round.data.save_submission.save_attempt", autospec=True)
     @patch("app.round.data.save_submission.save_prompt", autospec=True)
     @patch("app.round.data.save_submission.get_or_create_image", autospec=True)
-    def test_persists_entities_and_commits(
+    def test_stages_entities_without_committing(
         self,
         mock_get_or_create_image,
         mock_save_prompt,
@@ -51,4 +51,4 @@ class TestSaveSubmission(unittest.TestCase):
             generated_image_url="https://example.com/generated.jpg",
             similarity_score=50.0,
         )
-        session.commit.assert_called_once_with()
+        session.commit.assert_not_called()

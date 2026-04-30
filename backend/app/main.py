@@ -1,4 +1,7 @@
 import logging
+import os
+import threading
+from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
@@ -17,7 +20,28 @@ logging.basicConfig(
     format="%(asctime)s %(levelname)s %(name)s: %(message)s",
 )
 
-app = FastAPI(title="PromptCraft API")
+logger = logging.getLogger(__name__)
+
+
+def _warm_clip_model() -> None:
+    try:
+        from app.round.service.clip_scoring import _get_model_and_processor
+        _get_model_and_processor()
+    except Exception:
+        logger.exception("CLIP warmup failed; scoring will lazy-load on first request")
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Warm CLIP in a background thread so startup isn't blocked by the
+    # ~600MB download on first run. Opt out in dev via CLIP_SKIP_WARMUP=1.
+    if os.environ.get("CLIP_SKIP_WARMUP", "").strip() not in ("1", "true", "True"):
+        threading.Thread(target=_warm_clip_model, name="clip-warmup", daemon=True).start()
+    yield
+    dispose_engine()
+
+
+app = FastAPI(title="PromptCraft API", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -37,11 +61,6 @@ app.include_router(challenge_router)
 def app_exception_handler(request: Request, exc: AppException) -> JSONResponse:
     body = ApiResponse(data=None, error=exc.error.value, message=exc.message)
     return JSONResponse(status_code=exc.status_code, content=body.model_dump())
-
-
-@app.on_event("shutdown")
-def on_shutdown() -> None:
-    dispose_engine()
 
 
 @app.get("/health")

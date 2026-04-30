@@ -50,6 +50,7 @@ class TestStartRound(unittest.TestCase):
             round_id="golden-sunset",
             target_image_url="/static/golden-sunset.jpeg",
         )
+        session.commit.assert_called_once_with()
 
     @patch.object(start_round_module, "upsert_user_profile", autospec=True)
     @patch.object(start_round_module, "save_round_start", autospec=True)
@@ -78,6 +79,7 @@ class TestStartRound(unittest.TestCase):
 
         self.assertEqual(ctx.exception.status_code, 500)
         self.assertEqual(ctx.exception.message, "Failed to start round")
+        session.rollback.assert_called_once_with()
 
 
 class TestSelectRound(unittest.TestCase):

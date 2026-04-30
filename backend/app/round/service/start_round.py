@@ -42,7 +42,9 @@ def start_round(session: Session, args: StartRoundArgs) -> RoundStartResponse:
             round_id=selected_round["id"],
             target_image_url=target_image_url,
         )
+        session.commit()
     except Exception as exc:
+        session.rollback()
         logger.exception(
             "Failed to start round",
             extra={

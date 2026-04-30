@@ -15,23 +15,10 @@ def save_submission(
     generated_image_url: str,
     similarity_score: float,
 ) -> None:
-    """Persists a complete round submission transaction.
+    """Stages image, prompt, and attempt rows for a round submission.
 
-    Args:
-        session: The SQLAlchemy session used for data access.
-        user_id: The authenticated user's ID from the auth service.
-        reference_image: The reference image filename for the selected round.
-        difficulty: The textual difficulty of the selected round.
-        prompt_text: The user prompt text submitted for the round.
-        round_id: The static round identifier (e.g. "ancient-temple").
-        generated_image_url: The URL of the AI-generated image for this submission.
-        similarity_score: The computed similarity score for the submission.
-
-    Returns:
-        None.
-
-    Raises:
-        Exception: Propagates database errors raised during persistence.
+    Caller owns the transaction (commit/rollback); this function only
+    delegates to the per-entity stagers.
     """
     image_id = get_or_create_image(
         session=session,
@@ -53,4 +40,3 @@ def save_submission(
         generated_image_url=generated_image_url,
         similarity_score=similarity_score,
     )
-    session.commit()

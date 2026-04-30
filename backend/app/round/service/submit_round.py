@@ -60,7 +60,9 @@ def submit_round(session: Session, args: SubmitRoundArgs) -> RoundSubmitResponse
             generated_image_url=image_url,
             similarity_score=similarity_score,
         )
+        session.commit()
     except Exception as exc:
+        session.rollback()
         logger.error(
             "Failed to save round submission",
             extra={"channel": CHANNEL, "feature": SUBMIT_ROUND_FEATURE, "error": str(exc), "user": args.user_email},

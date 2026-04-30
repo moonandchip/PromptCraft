@@ -56,6 +56,7 @@ class TestSubmitRound(unittest.TestCase):
             generated_image_url="https://example.com/generated.jpg",
             similarity_score=72.5,
         )
+        session.commit.assert_called_once_with()
 
     @patch("app.round.service.submit_round.get_round_by_id", autospec=True)
     def test_submit_round_raises_not_found_error(self, mock_get_round_by_id):
@@ -146,12 +147,14 @@ class TestSubmitRound(unittest.TestCase):
         mock_generate_image.return_value = "https://example.com/generated.jpg"
         mock_compute_similarity_score.return_value = 50.0
         mock_save_submission.side_effect = Exception("DB unavailable")
+        session = MagicMock()
 
         with self.assertRaises(SubmitRoundException) as ctx:
             submit_round(
-                session=MagicMock(),
+                session=session,
                 args=SubmitRoundArgs(user_id="user-uuid-1234", user_email="test@example.com", round_id="ancient-temple", user_prompt="prompt"),
             )
 
         self.assertEqual(ctx.exception.status_code, 500)
         self.assertEqual(ctx.exception.message, "Failed to save submission")
+        session.rollback.assert_called_once_with()
