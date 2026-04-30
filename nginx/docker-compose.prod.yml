@@ -1,0 +1,55 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    container_name: promptcraft-backend
+    restart: unless-stopped
+    depends_on:
+      - auth
+    expose:
+      - "8000"
+    environment:
+      LEONARDO_API_KEY: ${LEONARDO_API_KEY}
+      DATABASE_URL: ${DATABASE_URL}
+      AUTH_SERVICE_URL: http://auth:3000
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: promptcraft-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    expose:
+      - "5173"
+    environment:
+      VITE_API_URL: /api
+      VITE_AUTH_URL: /auth
+      CHOKIDAR_USEPOLLING: "true"
+
+  auth:
+    build:
+      context: ./auth
+    container_name: promptcraft-auth
+    restart: unless-stopped
+    expose:
+      - "3000"
+    environment:
+      AUTH_DATABASE_URL: ${AUTH_DATABASE_URL}
+      AUTH_SECRET: ${AUTH_SECRET}
+      AUTH_URL: http://${EC2_PUBLIC_IP}/auth
+      NEXTAUTH_URL: http://${EC2_PUBLIC_IP}/auth
+      AUTH_TRUST_HOST: "true"
+
+  nginx:
+    image: nginx:alpine
+    container_name: promptcraft-nginx
+    restart: unless-stopped
+    depends_on:
+      - frontend
+      - backend
+      - auth
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/default.conf:/etc/nginx/conf.d/default.conf:ro

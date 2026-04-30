@@ -16,7 +16,7 @@ export default function GamePreviewPlatform() {
           <p className={styles.label}>Target Image</p>
           <div className={styles.imageMock}>
             <img
-              src="/static/ancient-temple.jpg"
+              src="/reference_images/promptcraft-icon.png"
               alt="Target preview"
               className={styles.previewImage}
             />
@@ -27,8 +27,10 @@ export default function GamePreviewPlatform() {
           <p className={styles.label}>Your Prompt</p>
 
           <div className={styles.inputMock}>
-            An ancient stone temple hidden in the jungle, overgrown with vines,
-            cinematic lighting, realistic details
+            A simple pixel art image of a framed landscape with green mountains, a blue sky, 
+            and a small sun, with a speech bubble and sparkles, minimal composition, 
+            clean retro 8-bit style, centered
+            
           </div>
 
           <button className={styles.generateButton} type="button">

@@ -83,7 +83,7 @@ export async function getRounds() {
  * }>} - The new round info.
  */
 export async function startRound({ difficulty } = {}) {
-  const url = new URL(`${VITE_API_URL}/round/start`);
+  const url = new URL(`${VITE_API_URL}/round/start`, window.location.origin);
   if (difficulty) url.searchParams.set("difficulty", difficulty);
   const data = await apiFetch(
     url.toString(),
