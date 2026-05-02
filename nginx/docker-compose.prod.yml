@@ -12,6 +12,12 @@ services:
       LEONARDO_API_KEY: ${LEONARDO_API_KEY}
       DATABASE_URL: ${DATABASE_URL}
       AUTH_SERVICE_URL: http://auth:3000
+      # Comma-separated. Set to your frontend origin(s), e.g.
+      # CORS_ALLOWED_ORIGINS=https://promptcrafts.net,https://www.promptcrafts.net
+      CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS}
+      # Optional regex (used in addition to the explicit list above), e.g.
+      # CORS_ALLOWED_ORIGIN_REGEX=^https://([a-z0-9-]+\.)?promptcrafts\.net$
+      CORS_ALLOWED_ORIGIN_REGEX: ${CORS_ALLOWED_ORIGIN_REGEX:-}
 
   frontend:
     build:

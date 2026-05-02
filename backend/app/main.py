@@ -45,10 +45,10 @@ app = FastAPI(title="PromptCraft API", lifespan=lifespan)
 
 
 def _allowed_origins() -> list[str]:
-    """Returns the list of allowed CORS origins.
+    """Returns the list of explicit allowed CORS origins.
 
     Set `CORS_ALLOWED_ORIGINS` to a comma-separated list (e.g.
-    "https://app.promptcraft.io,https://staging.promptcraft.io"). When unset,
+    "https://promptcrafts.net,https://www.promptcrafts.net"). When unset,
     falls back to local development defaults.
     """
     raw = os.environ.get("CORS_ALLOWED_ORIGINS", "").strip()
@@ -57,9 +57,18 @@ def _allowed_origins() -> list[str]:
     return [origin.strip() for origin in raw.split(",") if origin.strip()]
 
 
+def _allowed_origin_regex() -> str | None:
+    """Optional regex pattern that's matched in addition to the explicit list,
+    useful for wildcard subdomains (e.g. "^https://([a-z0-9-]+\\.)?promptcrafts\\.net$").
+    """
+    raw = os.environ.get("CORS_ALLOWED_ORIGIN_REGEX", "").strip()
+    return raw or None
+
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=_allowed_origins(),
+    allow_origin_regex=_allowed_origin_regex(),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

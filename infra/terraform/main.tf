@@ -49,18 +49,34 @@ locals {
   ))
   cors_allowed_origins = join(",", local.cors_origins_list)
 
+  # Regex that automatically allows the apex AND any subdomain of var.domain_name
+  # (e.g. promptcrafts.net + www.promptcrafts.net + previews). Empty when no
+  # domain is configured (sslip.io / localhost dev).
+  cors_allowed_origin_regex = (
+    var.domain_name != ""
+    ? "^https://([a-z0-9-]+\\.)?${replace(var.domain_name, ".", "\\.")}$"
+    : ""
+  )
+
   # Lowercased GHCR repo path. GHCR rejects uppercase in image references.
   github_repository_lc = lower(var.github_repository)
 
   # Rendered config files. user-data writes these to /etc/promptcraft/.
   env_file = templatefile("${path.module}/files/env.tftpl", {
-    db_password           = var.db_password
-    auth_secret           = var.auth_secret
-    auth_url              = local.use_tls ? local.auth_url : "http://localhost:3000"
-    leonardo_api_key      = var.leonardo_api_key
-    openai_api_key        = var.openai_api_key
-    prompt_feedback_model = var.prompt_feedback_model
-    cors_allowed_origins  = local.cors_allowed_origins
+    db_password               = var.db_password
+    auth_secret               = var.auth_secret
+    auth_url                  = local.use_tls ? local.auth_url : "http://localhost:3000"
+    leonardo_api_key          = var.leonardo_api_key
+    openai_api_key            = var.openai_api_key
+    prompt_feedback_model     = var.prompt_feedback_model
+    cors_allowed_origins      = local.cors_allowed_origins
+    cors_allowed_origin_regex = local.cors_allowed_origin_regex
+    # Used by the auth service to build password-reset links. Reuses
+    # frontend_origin so links land back on the live frontend.
+    app_origin         = var.frontend_origin != "" ? var.frontend_origin : "http://localhost:5173"
+    gmail_user         = var.gmail_user
+    gmail_app_password = var.gmail_app_password
+    email_from         = var.email_from
   })
 
   compose_file = templatefile("${path.module}/files/docker-compose.yml.tftpl", {

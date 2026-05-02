@@ -114,6 +114,12 @@ export default function LoginPage() {
         </form>
 
         <p className={styles.linkRow}>
+          <Link to="/forgot-password" className={styles.link}>
+            Forgot password?
+          </Link>
+        </p>
+
+        <p className={styles.linkRow}>
           Don&apos;t have an account?{" "}
           <Link to="/register" className={styles.link}>
             Register
