@@ -31,8 +31,8 @@ export async function apiFetch(
 
     if (response.status === 401) {
       localStorage.removeItem("token");
-      window.location.href = "/login";
-      throw new Error("Session expired. Redirecting to login...");
+      window.dispatchEvent(new CustomEvent("auth:expired"));
+      throw new Error("Session expired. Please log in again.");
     }
 
     if (!response.ok) {
@@ -203,6 +203,29 @@ export async function submitChallengePrompt(userPrompt) {
  */
 export async function getChallengeLeaderboard(limit = 10) {
   const data = await apiFetch(`${VITE_API_URL}/challenge/leaderboard?limit=${limit}`);
+  return data.data;
+}
+
+/**
+ * Fetch the caller's challenge archive (past N challenges with their results).
+ * @param {number} [limit=30]
+ * @returns {Promise<{
+ *   entries: Array<{
+ *     challenge_id: string,
+ *     period_start: string,
+ *     period_end: string,
+ *     round_id: string,
+ *     title: string,
+ *     difficulty: string,
+ *     target_image_url: string,
+ *     max_attempts: number,
+ *     attempts_used: number,
+ *     best_score: number
+ *   }>
+ * }>}
+ */
+export async function getChallengeArchive(limit = 30) {
+  const data = await apiFetch(`${VITE_API_URL}/challenge/archive?limit=${limit}`);
   return data.data;
 }
 

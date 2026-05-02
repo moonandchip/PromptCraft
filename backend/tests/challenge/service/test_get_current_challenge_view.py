@@ -20,10 +20,11 @@ def _make_challenge(round_id="fixed-round", max_attempts=3):
 
 
 class TestGetCurrentChallengeView(unittest.TestCase):
+    @patch.object(module, "get_user_streak", autospec=True, return_value=(0, 0))
     @patch.object(module, "get_user_challenge_progress", autospec=True)
     @patch.object(module, "get_round_by_id", autospec=True)
     @patch.object(module, "get_or_create_current_challenge", autospec=True)
-    def test_returns_state_with_progress(self, mock_get_or_create, mock_get_round, mock_get_progress):
+    def test_returns_state_with_progress(self, mock_get_or_create, mock_get_round, mock_get_progress, mock_streak):
         mock_get_or_create.return_value = _make_challenge()
         mock_get_round.return_value = {
             "id": "fixed-round",
@@ -56,10 +57,11 @@ class TestGetCurrentChallengeView(unittest.TestCase):
 
         self.assertEqual(ctx.exception.status_code, 404)
 
+    @patch.object(module, "get_user_streak", autospec=True, return_value=(0, 0))
     @patch.object(module, "get_user_challenge_progress", autospec=True)
     @patch.object(module, "get_round_by_id", autospec=True)
     @patch.object(module, "get_or_create_current_challenge", autospec=True)
-    def test_falls_back_to_module_round_lookup(self, mock_get_or_create, mock_get_round, mock_get_progress):
+    def test_falls_back_to_module_round_lookup(self, mock_get_or_create, mock_get_round, mock_get_progress, mock_streak):
         mock_get_or_create.return_value = _make_challenge(round_id="from-module")
         mock_get_round.return_value = None
         mock_get_progress.return_value = (0, 0.0)
@@ -72,3 +74,18 @@ class TestGetCurrentChallengeView(unittest.TestCase):
             result = module.get_current_challenge_view(session=MagicMock(), args=GetCurrentChallengeArgs(user_id="u1"))
 
         self.assertEqual(result.title, "X")
+
+    @patch.object(module, "get_user_streak", autospec=True, return_value=(7, 14))
+    @patch.object(module, "get_user_challenge_progress", autospec=True, return_value=(0, 0.0))
+    @patch.object(module, "get_round_by_id", autospec=True)
+    @patch.object(module, "get_or_create_current_challenge", autospec=True)
+    def test_includes_streak_in_response(self, mock_get_or_create, mock_get_round, mock_get_progress, mock_streak):
+        mock_get_or_create.return_value = _make_challenge()
+        mock_get_round.return_value = {
+            "id": "fixed-round", "title": "Fixed", "difficulty": "easy", "reference_image": "fixed.jpg",
+        }
+
+        result = module.get_current_challenge_view(session=MagicMock(), args=GetCurrentChallengeArgs(user_id="u1"))
+
+        self.assertEqual(result.current_streak, 7)
+        self.assertEqual(result.longest_streak, 14)

@@ -27,6 +27,10 @@ class TestRoundSubmitRequest(unittest.TestCase):
         with self.assertRaises(ValidationError):
             RoundSubmitRequest(round_id="some-round", user_prompt="x" * 2001)
 
+    def test_user_prompt_too_short_raises_validation_error(self):
+        with self.assertRaises(ValidationError):
+            RoundSubmitRequest(round_id="some-round", user_prompt="too short")
+
     def test_round_id_at_max_length_is_valid(self):
         req = RoundSubmitRequest(round_id="x" * 100, user_prompt="a valid prompt")
         self.assertEqual(len(req.round_id), 100)

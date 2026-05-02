@@ -1,67 +1,102 @@
 .page {
-  max-width: 900px;
+  min-height: 100vh;
+  background: linear-gradient(to bottom, #e8f8ff 0%, #f7fcff 100%);
+  padding: 2.5rem 1.25rem 4rem;
+  position: relative;
+  overflow-x: hidden;
+}
+
+.container {
+  max-width: 950px;
   margin: 0 auto;
-  padding: 2rem;
-  color: #111827;
+  position: relative;
+  z-index: 2;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
 }
 
 .title {
-  font-size: 2rem;
-  font-weight: 700;
+  font-family: 'Press Start 2P', cursive;
+  letter-spacing: -1.5px;
+  font-size: clamp(1.4rem, 3vw, 1.6rem);
+  line-height: 1.05;
+  color: #1e1e1e;
   text-align: center;
-  margin-bottom: 1.25rem;
+  margin: 0 0 1.5rem;
 }
 
+.guestBanner {
+  background: #fff7dc;
+  border: 3px solid #3b2f1f;
+  box-shadow: 0 5px 0 #3b2f1f;
+  padding: 0.85rem 1.1rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #1e1e1e;
+  line-height: 1.4;
+}
+
+.guestBannerLink {
+  color: #1e3a8a;
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.guestBannerLink:hover {
+  color: #1e40af;
+}
+
+/* Top control bar (difficulty + round badge) — sits in its own retro card */
 .controlsRow {
+  background: #f7f1d5;
+  border: 4px solid #3b2f1f;
+  box-shadow: 0 8px 0 #3b2f1f, 0 12px 22px rgba(0, 0, 0, 0.12);
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
   display: flex;
   align-items: center;
   gap: 1rem;
   flex-wrap: wrap;
-  width: 100%;
-  max-width: 700px;
-  margin-bottom: 1rem;
 }
 
 .controlLabel {
-  font-weight: 600;
+  font-weight: 700;
   font-size: 0.95rem;
-  color: #374151;
+  color: #1e1e1e;
 }
 
 .difficultySelect {
-  margin-left: 0.5rem;
-  padding: 0.4rem 0.65rem;
-  border: 2px solid #d1d5db;
-  border-radius: 0.5rem;
-  font-size: 0.95rem;
+  padding: 0.45rem 0.75rem;
+  border: 3px solid #3b2f1f;
+  background-color: #fff7dc;
   font-family: inherit;
-  background-color: #ffffff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #1e1e1e;
   cursor: pointer;
 }
 
 .difficultySelect:focus {
   outline: none;
-  border-color: var(--primary-color);
+  background-color: #fffbea;
 }
 
 .roundBadge {
   margin-left: auto;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.35rem 0.75rem;
-  background-color: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 9999px;
+  gap: 0.6rem;
+  padding: 0.45rem 0.85rem;
+  background-color: #fff7dc;
+  border: 3px solid #3b2f1f;
   font-size: 0.9rem;
 }
 
 .badgeTitle {
-  font-weight: 600;
-  color: #111827;
+  font-weight: 700;
+  color: #1e1e1e;
 }
 
 .badgeDifficulty {
@@ -69,73 +104,91 @@
   font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.05em;
+  padding: 2px 8px;
+  border: 2px solid #3b2f1f;
+  background: #ffffff;
 }
 
 .difficulty-easy {
-  color: #047857;
+  color: #166534;
+  background: #dcfce7;
 }
 
 .difficulty-medium {
-  color: #b45309;
+  color: #92400e;
+  background: #fef3c7;
 }
 
 .difficulty-hard {
   color: #b91c1c;
+  background: #fee2e2;
 }
 
+.badgeBest {
+  background: #67c23a;
+  color: #1e1e1e;
+  border: 2px solid #3b2f1f;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  letter-spacing: 0.02em;
+}
+
+/* Image cards — reference vs generated */
 .imagesRow {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 2rem;
-  width: 100%;
-  max-width: 700px;
-  margin: 0 auto 2rem;
-  align-items: start;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
 }
 
 .imageBundle {
+  background: #ffffff;
+  border: 4px solid #3b2f1f;
+  box-shadow: 0 8px 0 #3b2f1f, 0 12px 22px rgba(0, 0, 0, 0.12);
+  padding: 1rem;
   display: flex;
   flex-direction: column;
-  align-items: center;
 }
 
 .label {
-  font-weight: 500;
-  font-size: 1rem;
-  margin-bottom: 0.5rem;
+  font-weight: 700;
+  font-size: 0.9rem;
+  margin-bottom: 0.6rem;
   text-align: center;
+  color: #1e1e1e;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .imageWrapper {
   position: relative;
   width: 100%;
   aspect-ratio: 1 / 1;
-  border: 2px solid #e5e7eb;
-  border-radius: 0.5rem;
+  border: 3px solid #3b2f1f;
   overflow: hidden;
+  background-color: #fff7dc;
   display: flex;
-  background-color: #f9fafb;
 }
 
 .imageWrapper img {
   width: 100%;
   height: 100%;
-  object-fit: fill;
+  object-fit: cover;
   display: block;
 }
 
 .placeholder {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  inset: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
   font-size: 0.9rem;
-  color: #6b7280;
+  font-weight: 600;
+  color: #3a3a3a;
   padding: 1rem;
 }
 
@@ -143,212 +196,22 @@
   margin-top: 0.5rem;
 }
 
+.placeholderHint {
+  font-size: 0.78rem;
+  color: #6b7280;
+  font-style: italic;
+}
+
 .emoji {
   font-size: 2rem;
   margin-bottom: 0.5rem;
 }
 
-.promptSection {
-  width: 100%;
-  max-width: 700px;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin: 0 auto;
-}
-
-.promptLabel {
-  font-weight: 500;
-  font-size: 1rem;
-}
-
-.promptInput {
-  width: 100%;
-  min-height: 200px;
-  padding: 0.75rem;
-  border: 2px solid #d1d5db;
-  border-radius: 0.5rem;
-  font-size: 1rem;
-  font-family: inherit;
-  resize: vertical;
-  box-sizing: border-box;
-}
-
-.promptInput:focus {
-  border-color: var(--primary-color);
-  outline: none;
-}
-
-.promptControls {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 0.5rem;
-}
-
-.generateButton {
-  background-color: var(--primary-color);
-  color: white;
-  padding: 0.5rem 1rem;
-  font-weight: 500;
-  font-size: 1rem;
-  border: none;
-  border-radius: 0.5rem;
-  cursor: pointer;
-}
-
-.generateButton:disabled {
-  background-color: var(--primary-color-disabled);
-  cursor: not-allowed;
-}
-
-.generateButton:hover:not(:disabled) {
-  background-color: var(--primary-color-hover);
-}
-
-.charCounter {
-  font-size: 0.875rem;
-  color: #6b7280;
-}
-
-.errorBanner {
-  margin-top: 1rem;
-  padding: 0.75rem 1rem;
-  background-color: #fee2e2;
-  color: #b91c1c;
-  border-radius: 0.5rem;
-  font-weight: 500;
-  text-align: center;
-}
-
-.scoreRow {
-  margin-top: 1rem;
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-}
-
-.scoreLabel {
-  font-weight: 500;
-}
-
-.scorePill {
-  background-color: #e0f2fe;
-  color: #0369a1;
-  padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
-  font-weight: 500;
-}
-
-.feedback {
-  width: 100%;
-  max-width: 700px;
-  margin: 0.5rem 0 0;
-  padding: 0.75rem 1rem;
-  background-color: #f0f9ff;
-  border-left: 4px solid var(--primary-color);
-  color: #0c4a6e;
-  font-size: 0.95rem;
-  line-height: 1.4;
-  border-radius: 0.25rem;
-}
-
-.targetPromptSection {
-  width: 100%;
-  max-width: 700px;
-  margin-top: 1.25rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.targetPromptToggle {
-  background-color: #fff7ed;
-  color: #9a3412;
-  border: 2px solid #fed7aa;
-  border-radius: 0.5rem;
-  padding: 0.6rem 1rem;
-  font-size: 0.95rem;
-  font-weight: 600;
-  cursor: pointer;
-  text-align: left;
-}
-
-.targetPromptToggle:hover {
-  background-color: #ffedd5;
-}
-
-.targetPromptCard {
-  background-color: #ffffff;
-  border: 1px solid #fed7aa;
-  border-left: 4px solid #f97316;
-  border-radius: 0.5rem;
-  padding: 0.85rem 1rem;
-}
-
-.targetPromptHeader {
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  font-size: 0.75rem;
-  color: #9a3412;
-  margin-bottom: 0.5rem;
-}
-
-.targetPromptText {
-  margin: 0 0 0.5rem;
-  color: #1f2937;
-  line-height: 1.5;
-}
-
-.targetPromptHint {
-  margin: 0;
-  font-size: 0.85rem;
-  color: #6b7280;
-  font-style: italic;
-}
-
-.tryAgainButton {
-  background-color: var(--secondary-color);
-  color: white;
-  padding: 0.5rem 1rem;
-  font-weight: 500;
-  font-size: 1rem;
-  border: none;
-  border-radius: 0.5rem;
-  cursor: pointer;
-}
-
-.tryAgainButton:hover {
-  background-color: var(--secondary-color-hover);
-}
-
-.resultButtons {
-  display: flex;
-  gap: 1rem;
-  margin-top: 0.5rem;
-}
-
-.newRoundButton {
-  background-color: var(--secondary-color);
-  color: white;
-  padding: 0.5rem 1rem;
-  font-weight: 500;
-  font-size: 1rem;
-  border: none;
-  border-radius: 0.5rem;
-  cursor: pointer;
-}
-
-.newRoundButton:hover {
-  background-color: var(--secondary-color-hover);
-}
-
 .spinner {
   width: 36px;
   height: 36px;
-  border: 4px solid #d0e8ff;
-  border-top-color: #4da6ff;
+  border: 4px solid #fde68a;
+  border-top-color: #67c23a;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -359,29 +222,308 @@
   }
 }
 
-.attemptHistorySection {
+/* Prompt input area */
+.promptSection {
+  background: #ffffff;
+  border: 4px solid #3b2f1f;
+  box-shadow: 0 8px 0 #3b2f1f, 0 12px 22px rgba(0, 0, 0, 0.12);
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.promptLabel {
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: #1e1e1e;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.promptInput {
   width: 100%;
-  max-width: 700px;
-  margin-top: 1.5rem;
+  min-height: 180px;
+  padding: 0.85rem;
+  border: 3px solid #3b2f1f;
+  background: #fff7dc;
+  font-size: 1rem;
+  font-family: inherit;
+  line-height: 1.45;
+  color: #1e1e1e;
+  resize: vertical;
+  box-sizing: border-box;
+}
+
+.promptInput:focus {
+  outline: none;
+  background: #fffbea;
+}
+
+.promptInput:disabled {
+  background-color: #ece4c5;
+  color: #4b5563;
+  cursor: not-allowed;
+}
+
+.promptControls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 0.25rem;
+}
+
+.generateButton {
+  background: #67c23a;
+  border: 3px solid #3b2f1f;
+  color: #1e1e1e;
+  padding: 0.7rem 1.25rem;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  box-shadow: 0 5px 0 #3b2f1f;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.generateButton:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 7px 0 #3b2f1f;
+}
+
+.generateButton:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: 0 3px 0 #3b2f1f;
+}
+
+.generateButton:disabled {
+  background: #b9d8a3;
+  color: #555;
+  cursor: not-allowed;
+  box-shadow: 0 5px 0 #3b2f1f;
+}
+
+.charCounter {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #3a3a3a;
+}
+
+/* Score display */
+.scoreRow {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: center;
+  background: #fff7dc;
+  border: 4px solid #3b2f1f;
+  box-shadow: 0 8px 0 #3b2f1f, 0 12px 22px rgba(0, 0, 0, 0.12);
+  padding: 1rem 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.scoreLabel {
+  font-weight: 700;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #1e1e1e;
+}
+
+.scorePill {
+  background-color: #67c23a;
+  color: #1e1e1e;
+  border: 3px solid #3b2f1f;
+  padding: 0.35rem 1rem;
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+/* Result action buttons (Try again / New round) */
+.resultButtons {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.tryAgainButton,
+.newRoundButton {
+  border: 3px solid #3b2f1f;
+  padding: 0.7rem 1.25rem;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  box-shadow: 0 5px 0 #3b2f1f;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  color: #1e1e1e;
+}
+
+.tryAgainButton {
+  background: #fff7dc;
+}
+
+.newRoundButton {
+  background: #67c23a;
+}
+
+.tryAgainButton:hover,
+.newRoundButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 7px 0 #3b2f1f;
+}
+
+/* Feedback (Hints) section */
+.feedbackSection {
+  background: #ffffff;
+  border: 4px solid #3b2f1f;
+  box-shadow: 0 8px 0 #3b2f1f, 0 12px 22px rgba(0, 0, 0, 0.12);
+  padding: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.feedbackHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.feedbackTitle {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1e1e1e;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.feedbackToggle {
+  background-color: #fff7dc;
+  color: #1e1e1e;
+  border: 3px solid #3b2f1f;
+  padding: 0.45rem 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #3b2f1f;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.feedbackToggle:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 0 #3b2f1f;
+}
+
+.feedbackList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.feedbackItem {
+  background: #fff7dc;
+  border: 3px solid #3b2f1f;
+  padding: 0.7rem 0.9rem 0.7rem 2.4rem;
+  position: relative;
+  color: #1e1e1e;
+  line-height: 1.5;
+  font-size: 0.95rem;
+  font-weight: 500;
+}
+
+.feedbackItem::before {
+  content: "💡";
+  position: absolute;
+  left: 0.75rem;
+  top: 0.65rem;
+  font-size: 1rem;
+}
+
+/* Target prompt reveal */
+.targetPromptSection {
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.targetPromptToggle {
+  background-color: #fff7dc;
+  color: #1e1e1e;
+  border: 3px solid #3b2f1f;
+  padding: 0.7rem 1rem;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: left;
+  box-shadow: 0 5px 0 #3b2f1f;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.targetPromptToggle:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 7px 0 #3b2f1f;
+}
+
+.targetPromptCard {
+  background: #ffffff;
+  border: 4px solid #3b2f1f;
+  box-shadow: 0 8px 0 #3b2f1f, 0 12px 22px rgba(0, 0, 0, 0.12);
+  padding: 1.1rem 1.25rem;
+}
+
+.targetPromptHeader {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.8rem;
+  color: #1e1e1e;
+  margin-bottom: 0.5rem;
+}
+
+.targetPromptText {
+  margin: 0 0 0.5rem;
+  color: #1f2937;
+  line-height: 1.55;
+  font-style: italic;
+}
+
+.targetPromptHint {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #6b7280;
+}
+
+/* Attempt history (collapsed by default) */
+.attemptHistorySection {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+  margin-bottom: 1.5rem;
 }
 
 .attemptHistoryToggle {
-  background-color: #ffffff;
-  color: #111827;
-  border: 2px solid #d1d5db;
-  border-radius: 0.5rem;
-  padding: 0.75rem 1rem;
-  font-size: 1rem;
-  font-weight: 600;
+  background-color: #fff7dc;
+  color: #1e1e1e;
+  border: 3px solid #3b2f1f;
+  padding: 0.85rem 1rem;
+  font-size: 0.95rem;
+  font-weight: 700;
   cursor: pointer;
   text-align: left;
+  box-shadow: 0 5px 0 #3b2f1f;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
 }
 
 .attemptHistoryToggle:hover {
-  border-color: var(--primary-color);
+  transform: translateY(-2px);
+  box-shadow: 0 7px 0 #3b2f1f;
 }
 
 .attemptHistoryList {
@@ -392,10 +534,9 @@
 
 .attemptCard {
   background-color: #ffffff;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.75rem;
+  border: 4px solid #3b2f1f;
+  box-shadow: 0 8px 0 #3b2f1f, 0 12px 22px rgba(0, 0, 0, 0.12);
   padding: 1rem;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
 }
 
 .attemptHeader {
@@ -409,31 +550,36 @@
 .attemptTitle {
   font-weight: 700;
   font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #1e1e1e;
 }
 
 .attemptScore {
-  background-color: #e0f2fe;
-  color: #0369a1;
-  padding: 0.25rem 0.75rem;
-  border-radius: 9999px;
-  font-weight: 600;
+  background-color: #67c23a;
+  color: #1e1e1e;
+  border: 3px solid #3b2f1f;
+  padding: 0.25rem 0.85rem;
+  font-weight: 700;
   font-size: 0.95rem;
 }
 
 .attemptPrompt {
   margin-bottom: 0.75rem;
-  color: #374151;
+  color: #333;
   line-height: 1.5;
   word-break: break-word;
+  background: #fff7dc;
+  border: 3px solid #3b2f1f;
+  padding: 0.65rem 0.85rem;
 }
 
 .attemptImageWrapper {
   width: 100%;
   aspect-ratio: 1 / 1;
-  border: 1px solid #e5e7eb;
-  border-radius: 0.5rem;
+  border: 3px solid #3b2f1f;
   overflow: hidden;
-  background-color: #f9fafb;
+  background-color: #fff7dc;
 }
 
 .attemptImage {
@@ -443,65 +589,75 @@
   display: block;
 }
 
-.feedbackSection {
-  width: 100%;
-  max-width: 700px;
-  margin-top: 1rem;
-  background-color: #f0fdf4;
-  border: 1px solid #bbf7d0;
-  border-radius: 0.75rem;
-  padding: 1rem 1.25rem;
-}
-
-.feedbackHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
-}
-
-.feedbackTitle {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #15803d;
-  margin: 0;
-}
-
-.feedbackToggle {
-  background-color: #ffffff;
-  color: #166534;
-  border: 1px solid #86efac;
-  border-radius: 9999px;
-  padding: 0.4rem 0.85rem;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.feedbackToggle:hover {
-  background-color: #dcfce7;
-}
-
-.feedbackList {
-  list-style: none;
-  padding: 0;
-  margin: 0.75rem 0 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-.feedbackItem {
-  position: relative;
-  padding-left: 1.25rem;
-  color: #374151;
-  line-height: 1.5;
-  font-size: 0.95rem;
-}
-
-.feedbackItem::before {
-  content: "💡";
+/* Floating pixel decorations (matches HowToPlay) */
+.backgroundDecor1,
+.backgroundDecor2,
+.backgroundDecor3 {
   position: absolute;
-  left: 0;
-  top: 0;
+  width: 24px;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.5);
+  box-shadow: 4px 4px 0 rgba(0, 0, 0, 0.08);
+  animation: floatPixel 4s ease-in-out infinite;
+  z-index: 1;
+}
+
+.backgroundDecor1 {
+  top: 90px;
+  left: 8%;
+}
+
+.backgroundDecor2 {
+  top: 320px;
+  right: 10%;
+  animation-delay: 0.8s;
+}
+
+.backgroundDecor3 {
+  bottom: 140px;
+  left: 14%;
+  animation-delay: 1.4s;
+}
+
+@keyframes floatPixel {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  .page {
+    padding: 1.5rem 1rem 3rem;
+  }
+
+  .imagesRow {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
+  }
+
+  .controlsRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .roundBadge {
+    margin-left: 0;
+    flex-wrap: wrap;
+  }
+
+  .promptControls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .charCounter {
+    text-align: right;
+  }
 }

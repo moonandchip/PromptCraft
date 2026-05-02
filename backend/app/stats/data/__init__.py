@@ -1,4 +1,3 @@
-from .get_rounds_aggregates_by_user_id import get_rounds_aggregates_by_user_id
 from .get_user_stats_from_attempts import get_user_stats_from_attempts
 
-__all__ = ["get_rounds_aggregates_by_user_id", "get_user_stats_from_attempts"]
+__all__ = ["get_user_stats_from_attempts"]

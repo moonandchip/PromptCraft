@@ -1,0 +1,26 @@
+%{ if use_tls ~}
+{
+%{ if acme_email != "" ~}
+    email ${acme_email}
+%{ endif ~}
+}
+
+${api_host} {
+    encode zstd gzip
+    reverse_proxy backend:8000
+}
+
+${auth_host} {
+    encode zstd gzip
+    reverse_proxy auth:3000
+}
+%{ else ~}
+# No domain configured. Backend is served on plain HTTP for local sanity
+# checks. The auth service is NOT exposed in this mode — next-auth needs
+# HTTPS + a stable domain for cross-origin cookies. Set domain_name (or
+# use_sslip = true) to go to production.
+:80 {
+    encode zstd gzip
+    reverse_proxy backend:8000
+}
+%{ endif ~}

@@ -1,0 +1,64 @@
+version: 2
+updates:
+  - package-ecosystem: "pip"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    groups:
+      fastapi-stack:
+        patterns:
+          - "fastapi"
+          - "uvicorn"
+          - "pydantic*"
+          - "starlette"
+      sqlalchemy-stack:
+        patterns:
+          - "sqlalchemy"
+          - "alembic"
+          - "psycopg*"
+      ml-stack:
+        patterns:
+          - "torch"
+          - "transformers"
+          - "pillow"
+
+  - package-ecosystem: "npm"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+    open-pull-requests-limit: 5
+    groups:
+      react-stack:
+        patterns:
+          - "react"
+          - "react-dom"
+          - "react-router*"
+      vite-stack:
+        patterns:
+          - "vite"
+          - "@vitejs/*"
+          - "vitest"
+      testing-stack:
+        patterns:
+          - "@testing-library/*"
+          - "jsdom"
+      eslint-stack:
+        patterns:
+          - "eslint*"
+          - "@eslint/*"
+
+  - package-ecosystem: "docker"
+    directory: "/backend"
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "docker"
+    directory: "/frontend"
+    schedule:
+      interval: "weekly"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"

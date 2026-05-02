@@ -1,0 +1,94 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: promptcraft-db
+    restart: unless-stopped
+    env_file: /etc/promptcraft/.env
+    volumes:
+      - /mnt/pgdata/data:/var/lib/postgresql/data
+      - /etc/promptcraft/init-db.sql:/docker-entrypoint-initdb.d/01-init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d promptcraft"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    deploy:
+      resources:
+        limits:
+          memory: 350M
+    logging:
+      driver: awslogs
+      options:
+        awslogs-region: ${aws_region}
+        awslogs-group: ${log_group}
+        awslogs-stream: db
+
+  backend:
+    image: ghcr.io/${github_repository}/backend:${image_tag}
+    container_name: promptcraft-backend
+    restart: unless-stopped
+    env_file: /etc/promptcraft/.env
+    depends_on:
+      db:
+        condition: service_healthy
+      auth:
+        condition: service_started
+    deploy:
+      resources:
+        limits:
+          memory: 900M
+    logging:
+      driver: awslogs
+      options:
+        awslogs-region: ${aws_region}
+        awslogs-group: ${log_group}
+        awslogs-stream: backend
+
+  auth:
+    image: ghcr.io/${github_repository}/auth:${image_tag}
+    container_name: promptcraft-auth
+    restart: unless-stopped
+    env_file: /etc/promptcraft/.env
+    depends_on:
+      db:
+        condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          memory: 350M
+    logging:
+      driver: awslogs
+      options:
+        awslogs-region: ${aws_region}
+        awslogs-group: ${log_group}
+        awslogs-stream: auth
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: promptcraft-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - /etc/promptcraft/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - backend
+      - auth
+    deploy:
+      resources:
+        limits:
+          memory: 100M
+    logging:
+      driver: awslogs
+      options:
+        awslogs-region: ${aws_region}
+        awslogs-group: ${log_group}
+        awslogs-stream: caddy
+
+volumes:
+  caddy_data:
+  caddy_config:

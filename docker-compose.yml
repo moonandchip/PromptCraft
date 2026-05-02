@@ -31,6 +31,9 @@ services:
       - "8000:8000"
     volumes:
       - ./backend:/app
+    # Override the prod CMD from the Dockerfile: enable --reload for dev,
+    # skip alembic (run manually with `docker compose exec backend poetry run alembic upgrade head`).
+    command: poetry run uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 
   frontend:
     build:
@@ -62,9 +65,12 @@ services:
       - "3000:3000"
     environment:
       CHOKIDAR_USEPOLLING: "true"
+      NODE_ENV: development
     volumes:
       - ./auth:/app
       - auth_node_modules:/app/node_modules
+    # Override the prod CMD: run next dev against the bind-mounted source.
+    command: sh -c "npx prisma generate && npx prisma db push && npm run dev -- --hostname 0.0.0.0 --port 3000"
 
 volumes:
   postgres_data:

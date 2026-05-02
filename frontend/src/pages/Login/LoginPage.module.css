@@ -46,6 +46,45 @@
   box-shadow: 0 0 0 2px rgba(77, 166, 255, 0.2);
 }
 
+.passwordWrapper {
+  position: relative;
+  width: 100%;
+}
+
+.passwordWrapper .input {
+  padding-right: 64px;
+}
+
+.passwordToggle {
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  background: transparent;
+  border: none;
+  color: var(--primary-color);
+  font-size: 0.85rem;
+  font-weight: 500;
+  cursor: pointer;
+  padding: 4px 8px;
+}
+
+.passwordToggle:hover {
+  text-decoration: underline;
+}
+
+.sessionExpired {
+  display: block;
+  margin-bottom: 16px;
+  padding: 10px 12px;
+  background: #fef3c7;
+  border: 1px solid #fde68a;
+  color: #92400e;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  text-align: left;
+}
+
 .button {
   padding: 12px;
   background-color: var(--primary-color);

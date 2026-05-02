@@ -52,7 +52,7 @@ class TestSubmitEndpoint(unittest.TestCase):
 
         with self.assertRaises(SubmitChallengeException) as ctx:
             submit_endpoint(
-                body=ChallengeSubmitRequest(user_prompt="prompt"),
+                body=ChallengeSubmitRequest(user_prompt="a vivid prompt scene"),
                 current_user=UserResponse(id="u1", email="user@example.com", name="User"),
                 session=MagicMock(),
             )
@@ -65,7 +65,7 @@ class TestSubmitEndpoint(unittest.TestCase):
 
         with self.assertRaises(SubmitChallengeException) as ctx:
             submit_endpoint(
-                body=ChallengeSubmitRequest(user_prompt="prompt"),
+                body=ChallengeSubmitRequest(user_prompt="a vivid prompt scene"),
                 current_user=UserResponse(id="u1", email="user@example.com", name="User"),
                 session=MagicMock(),
             )

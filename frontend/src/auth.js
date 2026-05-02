@@ -68,6 +68,49 @@ export function getToken() {
   return localStorage.getItem("token");
 }
 
+const USER_CACHE_KEY = "promptcraft_user_cache";
+const USER_CACHE_TTL_MS = 5 * 60 * 1000;
+
+/**
+ * Returns the cached user object if still fresh, otherwise null.
+ * The cache is keyed off the current token; stale entries are dropped.
+ */
+export function getCachedUser() {
+  try {
+    const raw = localStorage.getItem(USER_CACHE_KEY);
+    if (!raw) return null;
+    const { user, token, expiresAt } = JSON.parse(raw);
+    if (!user || token !== getToken() || Date.now() > expiresAt) {
+      localStorage.removeItem(USER_CACHE_KEY);
+      return null;
+    }
+    return user;
+  } catch {
+    localStorage.removeItem(USER_CACHE_KEY);
+    return null;
+  }
+}
+
+export function cacheUser(user) {
+  if (!user) return;
+  try {
+    localStorage.setItem(
+      USER_CACHE_KEY,
+      JSON.stringify({
+        user,
+        token: getToken(),
+        expiresAt: Date.now() + USER_CACHE_TTL_MS,
+      }),
+    );
+  } catch {
+    // Storage full or unavailable — caching is best-effort.
+  }
+}
+
+export function clearCachedUser() {
+  localStorage.removeItem(USER_CACHE_KEY);
+}
+
 /**
  * Fetch the currently logged-in user's info.
  * Shows global loading while the request is in progress.
@@ -88,6 +131,7 @@ export async function getMe() {
 
     if (!res.ok) throw new Error(data.error || "Unauthorized");
 
+    if (data.user) cacheUser(data.user);
     return data;
   } finally {
     setGlobalLoading(false);

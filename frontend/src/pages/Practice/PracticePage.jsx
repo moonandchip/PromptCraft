@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
-import { startRound, submitPrompt } from "../../api";
+import { Link } from "react-router-dom";
+import { getRoundHistory, startRound, submitPrompt } from "../../api";
+import { useAuth } from "../../components/AuthContext";
 import ErrorBanner from "../../components/ErrorBanner";
 import styles from "./PracticePage.module.css";
 
@@ -28,6 +30,7 @@ function loadSavedDifficulty() {
 }
 
 export default function PracticePage() {
+  const { user } = useAuth();
   const savedState = loadSavedPracticeState();
 
   const [referenceImage, setReferenceImage] = useState(savedState?.referenceImage ?? null);
@@ -46,6 +49,7 @@ export default function PracticePage() {
   const [feedback, setFeedback] = useState(savedState?.feedback ?? []);
   const [showFeedback, setShowFeedback] = useState(savedState?.showFeedback ?? true);
   const [difficulty, setDifficulty] = useState(loadSavedDifficulty);
+  const [roundBests, setRoundBests] = useState({});
 
   const loadReference = async (chosenDifficulty = difficulty) => {
     clearSavedPracticeState();
@@ -84,6 +88,26 @@ export default function PracticePage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (!user) return undefined;
+    let cancelled = false;
+    getRoundHistory()
+      .then((rows) => {
+        if (cancelled) return;
+        const map = {};
+        for (const row of rows ?? []) {
+          map[row.round_id] = row.best_score;
+        }
+        setRoundBests(map);
+      })
+      .catch(() => {
+        // History fetch is best-effort; failure just hides the badge.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [user]);
 
   useEffect(() => {
     if (!referenceRoundId || !referenceImage) return;
@@ -131,7 +155,7 @@ export default function PracticePage() {
   };
 
   const handleGenerate = async () => {
-    if (!prompt.trim()) return;
+    if (prompt.trim().length < 10) return;
 
     setLoadingGenerated(true);
     setGeneratedImage(null);
@@ -161,6 +185,14 @@ export default function PracticePage() {
           submittedAt: Date.now(),
         },
       ]);
+
+      if (referenceRoundId) {
+        setRoundBests((prev) => {
+          const previous = prev[referenceRoundId] ?? 0;
+          if (score <= previous) return prev;
+          return { ...prev, [referenceRoundId]: score };
+        });
+      }
     } catch (err) {
       console.error(err);
       setError(err.message || "Failed to generate image.");
@@ -186,10 +218,26 @@ export default function PracticePage() {
   const hasAnyAttempt = attemptHistory.length > 0;
 
   return (
-    <div className={styles.page}>
-      <h1 className={styles.title}>Practice Mode</h1>
+    <main className={styles.page}>
+      <div className={styles.backgroundDecor1}></div>
+      <div className={styles.backgroundDecor2}></div>
+      <div className={styles.backgroundDecor3}></div>
 
-      <div className={styles.controlsRow}>
+      <div className={styles.container}>
+        <h1 className={styles.title}>Practice Mode</h1>
+
+        {!user && (
+          <div className={styles.guestBanner}>
+            Playing as guest — your scores stay on this device.{" "}
+            <Link to="/register" className={styles.guestBannerLink}>
+              Create an account
+            </Link>
+            {" "}to save your history, track progress, and join the daily
+            challenge.
+          </div>
+        )}
+
+        <div className={styles.controlsRow}>
         <label className={styles.controlLabel} htmlFor="practice-difficulty-select">
           Difficulty
         </label>
@@ -212,6 +260,11 @@ export default function PracticePage() {
             {roundDifficulty && (
               <span className={`${styles.badgeDifficulty} ${styles[`difficulty-${roundDifficulty}`]}`}>
                 {roundDifficulty}
+              </span>
+            )}
+            {referenceRoundId && roundBests[referenceRoundId] !== undefined && (
+              <span className={styles.badgeBest}>
+                Best: {roundBests[referenceRoundId].toFixed(1)}
               </span>
             )}
           </div>
@@ -247,7 +300,13 @@ export default function PracticePage() {
           className={styles.promptInput}
           value={prompt}
           onChange={handlePromptChange}
-          placeholder="Describe what you want the AI to generate..."
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+              e.preventDefault();
+              handleGenerate();
+            }
+          }}
+          placeholder="Describe what you want the AI to generate... (Ctrl+Enter to submit)"
           disabled={loadingGenerated || hasResult}
         />
 
@@ -255,12 +314,16 @@ export default function PracticePage() {
           <button
             onClick={handleGenerate}
             className={styles.generateButton}
-            disabled={!prompt.trim() || loadingGenerated || hasResult}
+            disabled={prompt.trim().length < 10 || loadingGenerated || hasResult}
           >
             Generate Image
           </button>
 
-          <span className={styles.charCounter}>{prompt.length} / 2000</span>
+          <span className={styles.charCounter}>
+            {prompt.length < 10 && prompt.length > 0
+              ? `${prompt.length} / 2000 (min 10)`
+              : `${prompt.length} / 2000`}
+          </span>
         </div>
       </div>
 
@@ -288,8 +351,8 @@ export default function PracticePage() {
 
               {showFeedback && (
                 <ul className={styles.feedbackList}>
-                  {feedback.map((tip, i) => (
-                    <li key={i} className={styles.feedbackItem}>
+                  {feedback.map((tip) => (
+                    <li key={tip} className={styles.feedbackItem}>
                       {tip}
                     </li>
                   ))}
@@ -351,7 +414,8 @@ export default function PracticePage() {
           )}
         </div>
       )}
-    </div>
+      </div>
+    </main>
   );
 }
 
@@ -380,7 +444,10 @@ function renderGeneratedImage(loadingGenerated, generatedImage, styles) {
     return (
       <span className={styles.placeholder}>
         <div className={styles.spinner}></div>
-        <span>Generating...</span>
+        <span>Generating your image...</span>
+        <span className={styles.placeholderHint}>
+          This can take up to a minute.
+        </span>
       </span>
     );
   }

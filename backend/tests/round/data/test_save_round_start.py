@@ -1,5 +1,5 @@
 import unittest
-from unittest.mock import create_autospec, patch
+from unittest.mock import create_autospec
 
 from sqlalchemy.orm import Session
 
@@ -8,7 +8,7 @@ from app.stats.data.entities import Round
 
 
 class TestSaveRoundStart(unittest.TestCase):
-    def test_adds_round_entity_and_commits(self):
+    def test_stages_round_entity_without_committing(self):
         session = create_autospec(Session, instance=True, spec_set=True)
 
         save_round_start(
@@ -25,11 +25,12 @@ class TestSaveRoundStart(unittest.TestCase):
         self.assertEqual(added_obj.round_id, "ancient-temple")
         self.assertEqual(added_obj.target_image_url, "/static/ancient-temple.jpg")
         self.assertEqual(added_obj.score, 0.0)
-        session.commit.assert_called_once()
+        session.flush.assert_called_once()
+        session.commit.assert_not_called()
 
     def test_propagates_db_errors(self):
         session = create_autospec(Session, instance=True, spec_set=True)
-        session.commit.side_effect = Exception("FK violation")
+        session.flush.side_effect = Exception("FK violation")
 
         with self.assertRaises(Exception, msg="FK violation"):
             save_round_start(

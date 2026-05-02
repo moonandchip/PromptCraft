@@ -175,7 +175,17 @@ export default function ProgressPage() {
   };
 
   if (loading) {
-    return <div className={styles.message}>Loading progress...</div>;
+    return (
+      <main className={styles.page}>
+        <div className={styles.backgroundDecor1}></div>
+        <div className={styles.backgroundDecor2}></div>
+        <div className={styles.backgroundDecor3}></div>
+        <div className={styles.container}>
+          <h1 className={styles.title}>My Progress</h1>
+          <div className={styles.message}>Loading progress...</div>
+        </div>
+      </main>
+    );
   }
 
   const scoreTrend = (stats?.recent_attempts ?? [])
@@ -191,10 +201,14 @@ export default function ProgressPage() {
   const { linePath, areaPath, chartPoints, yAxisTicks } = buildChart(scoreTrend);
 
   return (
-    <div className={styles.container}>
-      <h1 className={styles.title}>My Progress</h1>
+    <main className={styles.page}>
+      <div className={styles.backgroundDecor1}></div>
+      <div className={styles.backgroundDecor2}></div>
+      <div className={styles.backgroundDecor3}></div>
+      <div className={styles.container}>
+        <h1 className={styles.title}>My Progress</h1>
 
-      <ErrorBanner message={error} onClose={() => setError(null)} />
+        <ErrorBanner message={error} onClose={() => setError(null)} />
 
             {stats && (
         <>
@@ -348,6 +362,7 @@ export default function ProgressPage() {
           })}
         </ul>
       )}
-    </div>
+      </div>
+    </main>
   );
 }

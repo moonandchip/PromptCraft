@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import io
 import logging
+import threading
 import urllib.request
 from pathlib import Path
 
@@ -28,18 +29,25 @@ logger = logging.getLogger(__name__)
 
 _model: CLIPModel | None = None
 _processor: CLIPProcessor | None = None
+_load_lock = threading.Lock()
 _CLIP_MODEL_NAME = "openai/clip-vit-base-patch32"
 
 
 def _get_model_and_processor() -> tuple[CLIPModel, CLIPProcessor]:
-    """Lazy-load the CLIP model and processor (downloads on first run)."""
+    """Lazy-load the CLIP model and processor (downloads on first run).
+
+    Thread-safe via double-checked locking so the startup warmup thread
+    and the first scoring request can't both trigger a load in parallel.
+    """
     global _model, _processor  # noqa: PLW0603
     if _model is None or _processor is None:
-        logger.info("Loading CLIP model '%s' …", _CLIP_MODEL_NAME)
-        _model = CLIPModel.from_pretrained(_CLIP_MODEL_NAME)
-        _processor = CLIPProcessor.from_pretrained(_CLIP_MODEL_NAME)
-        _model.eval()
-        logger.info("CLIP model loaded successfully.")
+        with _load_lock:
+            if _model is None or _processor is None:
+                logger.info("Loading CLIP model '%s' …", _CLIP_MODEL_NAME)
+                _model = CLIPModel.from_pretrained(_CLIP_MODEL_NAME)
+                _processor = CLIPProcessor.from_pretrained(_CLIP_MODEL_NAME)
+                _model.eval()
+                logger.info("CLIP model loaded successfully.")
     return _model, _processor
 
 

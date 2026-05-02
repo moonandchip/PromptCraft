@@ -3,9 +3,30 @@ import HeroPlatform from "../../components/Home/HeroPlatform";
 import GamePreviewPlatform from "../../components/Home/GamePreviewPlatform";
 import PlatformCard from "../../components/Home/PlatformCard";
 import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { getChallengeLeaderboard } from "../../api";
 
 export default function HomePage() {
   const navigate = useNavigate();
+  const [topEntries, setTopEntries] = useState([]);
+  const [leaderboardLoaded, setLeaderboardLoaded] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const data = await getChallengeLeaderboard(3);
+        if (!cancelled) setTopEntries(data.entries ?? []);
+      } catch {
+        // Leaderboard failure shouldn't break the home page; just hide the section.
+      } finally {
+        if (!cancelled) setLeaderboardLoaded(true);
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <main className={styles.page}>
@@ -41,7 +62,7 @@ export default function HomePage() {
 
             <PlatformCard className={styles.challengeCard}>
               <div className={styles.grassTop}></div>
-              <h3 className={styles.cardTitle}>Weekly Challenge</h3>
+              <h3 className={styles.cardTitle}>Daily Challenge</h3>
               <p className={styles.cardText}>
                 Compete for the best score and climb the leaderboard.
               </p>
@@ -69,30 +90,24 @@ export default function HomePage() {
           </div>
         </section>
 
-        <section className={styles.leaderboardSection}>
-          <PlatformCard className={styles.leaderboardCard}>
-            <div className={styles.grassTop}></div>
-            <h2 className={styles.leaderboardTitle}>Top Players This Week</h2>
+        {leaderboardLoaded && topEntries.length > 0 && (
+          <section className={styles.leaderboardSection}>
+            <PlatformCard className={styles.leaderboardCard}>
+              <div className={styles.grassTop}></div>
+              <h2 className={styles.leaderboardTitle}>Top Players Today</h2>
 
-            <div className={styles.leaderboardList}>
-              <div className={styles.leaderboardRow}>
-                <span>#1</span>
-                <span>Maria</span>
-                <span>94%</span>
+              <div className={styles.leaderboardList}>
+                {topEntries.map((entry) => (
+                  <div key={entry.user_id} className={styles.leaderboardRow}>
+                    <span>#{entry.rank}</span>
+                    <span>{entry.display_name}</span>
+                    <span>{entry.best_score.toFixed(1)}</span>
+                  </div>
+                ))}
               </div>
-              <div className={styles.leaderboardRow}>
-                <span>#2</span>
-                <span>Carlos</span>
-                <span>91%</span>
-              </div>
-              <div className={styles.leaderboardRow}>
-                <span>#3</span>
-                <span>Ashley</span>
-                <span>89%</span>
-              </div>
-            </div>
-          </PlatformCard>
-        </section>
+            </PlatformCard>
+          </section>
+        )}
       </div>
     </main>
   );

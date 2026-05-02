@@ -1,0 +1,149 @@
+#!/bin/bash
+set -euo pipefail
+exec > >(tee -a /var/log/${project_name}-userdata.log) 2>&1
+
+echo "[$(date -Iseconds)] user-data starting"
+
+# =============================================================================
+# 1. Install Docker + compose plugin
+# =============================================================================
+export DEBIAN_FRONTEND=noninteractive
+apt-get update -y
+apt-get install -y ca-certificates curl gnupg
+
+install -m 0755 -d /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg \
+  | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+chmod a+r /etc/apt/keyrings/docker.gpg
+
+ARCH=$(dpkg --print-architecture)
+CODENAME=$(. /etc/os-release && echo "$VERSION_CODENAME")
+echo "deb [arch=$ARCH signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $CODENAME stable" \
+  > /etc/apt/sources.list.d/docker.list
+
+apt-get update -y
+apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+usermod -aG docker ubuntu
+systemctl enable --now docker
+
+# =============================================================================
+# 2. Ensure SSM agent is running (Canonical Ubuntu ships it via snap)
+# =============================================================================
+if systemctl list-unit-files | grep -q snap.amazon-ssm-agent.amazon-ssm-agent.service; then
+    systemctl enable --now snap.amazon-ssm-agent.amazon-ssm-agent.service
+elif systemctl list-unit-files | grep -q amazon-ssm-agent.service; then
+    systemctl enable --now amazon-ssm-agent.service
+else
+    echo "WARN: SSM agent not found. Session Manager will not work."
+fi
+
+# =============================================================================
+# 3. Swap file — t3.small only has 2 GB RAM, CLIP loads ~512 MB on demand
+# =============================================================================
+if [ ! -f /swapfile ]; then
+    fallocate -l 2G /swapfile
+    chmod 600 /swapfile
+    mkswap /swapfile
+    swapon /swapfile
+    echo '/swapfile none swap sw 0 0' >> /etc/fstab
+fi
+
+# =============================================================================
+# 4. Find and mount the Postgres data EBS volume
+# Nitro instances remap /dev/sdh -> /dev/nvme1n1 (or similar). Wait for it.
+# =============================================================================
+DATA_DEV=""
+ROOT_DEV=$(findmnt -n -o SOURCE / | sed 's/p[0-9]*$//')
+
+for i in $(seq 1 30); do
+    for dev in /dev/nvme*n1; do
+        [ -e "$dev" ] || continue
+        if [ "$dev" = "$ROOT_DEV" ]; then continue; fi
+        DATA_DEV="$dev"
+        break 2
+    done
+    sleep 2
+done
+
+if [ -z "$DATA_DEV" ]; then
+    echo "ERROR: Postgres data EBS device did not appear after 60s"
+    exit 1
+fi
+
+echo "Using $DATA_DEV for Postgres data"
+
+if ! blkid "$DATA_DEV" >/dev/null 2>&1; then
+    echo "Formatting $DATA_DEV as ext4 (first boot)"
+    mkfs.ext4 -F "$DATA_DEV"
+fi
+
+mkdir -p /mnt/pgdata
+UUID=$(blkid -s UUID -o value "$DATA_DEV")
+if ! grep -q "$UUID" /etc/fstab; then
+    echo "UUID=$UUID /mnt/pgdata ext4 defaults,nofail 0 2" >> /etc/fstab
+fi
+mount -a
+
+# Postgres refuses to initdb into a non-empty directory; ext4 always has
+# lost+found at the root, so PGDATA must be a subdirectory.
+mkdir -p /mnt/pgdata/data
+chown -R 70:70 /mnt/pgdata/data || true   # postgres:postgres in the alpine image
+
+# =============================================================================
+# 5. Render config files into /etc/${project_name}/
+# Terraform interpolates the heredoc bodies before bash sees them; the
+# single-quoted EOF markers stop bash from re-expanding their content.
+# =============================================================================
+mkdir -p /etc/${project_name}
+
+cat > /etc/${project_name}/.env <<'PROMPTCRAFT_ENV_EOF'
+${env_file}
+PROMPTCRAFT_ENV_EOF
+chmod 0600 /etc/${project_name}/.env
+
+cat > /etc/${project_name}/docker-compose.yml <<'PROMPTCRAFT_COMPOSE_EOF'
+${compose_file}
+PROMPTCRAFT_COMPOSE_EOF
+
+cat > /etc/${project_name}/Caddyfile <<'PROMPTCRAFT_CADDY_EOF'
+${caddy_file}
+PROMPTCRAFT_CADDY_EOF
+
+cat > /etc/${project_name}/init-db.sql <<'PROMPTCRAFT_INITDB_EOF'
+${init_db_sql}
+PROMPTCRAFT_INITDB_EOF
+
+# =============================================================================
+# 6. Login to GHCR and start the stack
+# =============================================================================
+echo "${ghcr_token}" | docker login ghcr.io -u "${ghcr_username}" --password-stdin
+
+cd /etc/${project_name}
+docker compose pull
+docker compose up -d
+
+# =============================================================================
+# 7. Systemd unit so the stack survives reboots
+# =============================================================================
+cat > /etc/systemd/system/${project_name}.service <<'PROMPTCRAFT_SYSTEMD_EOF'
+[Unit]
+Description=PromptCraft application stack
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=/etc/${project_name}
+ExecStart=/usr/bin/docker compose up -d
+ExecStop=/usr/bin/docker compose down
+
+[Install]
+WantedBy=multi-user.target
+PROMPTCRAFT_SYSTEMD_EOF
+
+systemctl daemon-reload
+systemctl enable ${project_name}.service
+
+echo "[$(date -Iseconds)] user-data complete"

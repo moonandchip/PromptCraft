@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime, timezone
 from pathlib import Path
 
 from sqlalchemy.orm import Session
@@ -8,9 +9,10 @@ from app.round.data.upsert_user_profile import upsert_user_profile
 from app.round.service.clip_scoring import compute_similarity_score
 from app.round.service.generate_image import GenerationError, generate_image
 from app.round.service.get_round_by_id import get_round_by_id
+from app.round.service.prompt_feedback import generate_prompt_feedback
 
 from ..constants import CHANNEL, SUBMIT_CHALLENGE_FEATURE
-from ..data import get_user_challenge_progress
+from ..data import get_user_challenge_progress, get_user_streak, update_user_streak
 from ..exceptions import ChallengeError, SubmitChallengeException
 from ..models import ChallengeSubmitResponse
 from ..types.args import SubmitChallengeArgs
@@ -82,6 +84,11 @@ def submit_challenge(session: Session, args: SubmitChallengeArgs) -> ChallengeSu
             similarity_score=similarity_score,
             challenge_id=challenge_id,
         )
+        update_user_streak(
+            session=session,
+            user_id=args.user_id,
+            today=datetime.now(timezone.utc).date(),
+        )
         session.commit()
     except Exception as exc:
         session.rollback()
@@ -96,6 +103,20 @@ def submit_challenge(session: Session, args: SubmitChallengeArgs) -> ChallengeSu
     attempts_used, best_score = get_user_challenge_progress(
         session=session, user_id=args.user_id, challenge_id=challenge_id,
     )
+    current_streak, longest_streak = get_user_streak(session=session, user_id=args.user_id)
+
+    feedback: list[str] = []
+    try:
+        feedback = generate_prompt_feedback(
+            reference_image_path=reference_path,
+            user_prompt=args.user_prompt,
+            similarity_score=similarity_score,
+        )
+    except Exception as exc:
+        logger.error(
+            "Prompt feedback failed; returning empty feedback",
+            extra={"channel": CHANNEL, "feature": SUBMIT_CHALLENGE_FEATURE, "error": str(exc), "user": args.user_email},
+        )
 
     logger.info(
         "Challenge submission saved",
@@ -114,4 +135,7 @@ def submit_challenge(session: Session, args: SubmitChallengeArgs) -> ChallengeSu
         attempts_used=attempts_used,
         attempts_remaining=max(challenge.max_attempts - attempts_used, 0),
         best_score=best_score,
+        current_streak=current_streak,
+        longest_streak=longest_streak,
+        feedback=feedback,
     )
