@@ -48,28 +48,31 @@ def submit_round(session: Session, args: SubmitRoundArgs) -> RoundSubmitResponse
             extra={"channel": CHANNEL, "feature": SUBMIT_ROUND_FEATURE, "error": str(exc), "user": args.user_email},
         )
 
-    try:
-        upsert_user_profile(session, user_id=args.user_id, email=args.user_email, display_name=args.user_display_name)
-        save_submission(
-            session=session,
-            user_id=args.user_id,
-            reference_image=matched_round["reference_image"],
-            difficulty=matched_round["difficulty"],
-            prompt_text=args.user_prompt,
-            round_id=args.round_id,
-            generated_image_url=image_url,
-            similarity_score=similarity_score,
-        )
-        session.commit()
-    except Exception as exc:
-        session.rollback()
-        logger.error(
-            "Failed to save round submission",
-            extra={"channel": CHANNEL, "feature": SUBMIT_ROUND_FEATURE, "error": str(exc), "user": args.user_email},
-        )
-        raise SubmitRoundException(
-            RoundError.SAVE_FAILED, message="Failed to save submission",
-        ) from exc
+    # Guest submissions skip DB persistence — they get the generated image and
+    # score back, but nothing is stored.
+    if args.user_id and args.user_email:
+        try:
+            upsert_user_profile(session, user_id=args.user_id, email=args.user_email, display_name=args.user_display_name)
+            save_submission(
+                session=session,
+                user_id=args.user_id,
+                reference_image=matched_round["reference_image"],
+                difficulty=matched_round["difficulty"],
+                prompt_text=args.user_prompt,
+                round_id=args.round_id,
+                generated_image_url=image_url,
+                similarity_score=similarity_score,
+            )
+            session.commit()
+        except Exception as exc:
+            session.rollback()
+            logger.error(
+                "Failed to save round submission",
+                extra={"channel": CHANNEL, "feature": SUBMIT_ROUND_FEATURE, "error": str(exc), "user": args.user_email},
+            )
+            raise SubmitRoundException(
+                RoundError.SAVE_FAILED, message="Failed to save submission",
+            ) from exc
 
     feedback: list[str] = []
     try:

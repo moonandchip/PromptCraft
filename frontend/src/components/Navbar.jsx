@@ -27,12 +27,16 @@ export default function Navbar() {
           <Link to="/practice" className={styles.navLink}>
             Practice
           </Link>
-          <Link to="/challenge" className={styles.navLink}>
-            Challenge
-          </Link>
-          <Link to="/progress" className={styles.navLink}>
-            Progress
-          </Link>
+          {user && (
+            <>
+              <Link to="/challenge" className={styles.navLink}>
+                Challenge
+              </Link>
+              <Link to="/progress" className={styles.navLink}>
+                Progress
+              </Link>
+            </>
+          )}
         </div>
       </div>
 

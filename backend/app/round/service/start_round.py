@@ -28,6 +28,24 @@ def start_round(session: Session, args: StartRoundArgs) -> RoundStartResponse:
     selected_round = _select_round(args.difficulty)
     target_image_url = f"/static/{selected_round['reference_image']}"
 
+    # Guest play (no auth): skip persistence entirely.
+    if not args.user_id or not args.user_email:
+        logger.info(
+            "Round started (guest)",
+            extra={
+                "channel": CHANNEL,
+                "feature": START_ROUND_FEATURE,
+                "round_id": selected_round["id"],
+            },
+        )
+        return RoundStartResponse(
+            round_id=selected_round["id"],
+            target_image_url=target_image_url,
+            title=selected_round["title"],
+            difficulty=selected_round["difficulty"],
+            target_prompt=selected_round.get("target_prompt", ""),
+        )
+
     try:
         actual_user_id = upsert_user_profile(
             session,

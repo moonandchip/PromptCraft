@@ -3,7 +3,7 @@ import logging
 from fastapi import Depends
 from sqlalchemy.orm import Session
 
-from app.auth.dependencies import get_current_user
+from app.auth.dependencies import get_current_user_optional
 from app.auth.models import UserResponse
 from app.exceptions import AppException
 from app.response import ApiResponse
@@ -20,11 +20,17 @@ logger = logging.getLogger(__name__)
 
 def submit_endpoint(
     body: RoundSubmitRequest,
-    current_user: UserResponse = Depends(get_current_user),
+    current_user: UserResponse | None = Depends(get_current_user_optional),
     session: Session = Depends(get_db_session),
 ) -> ApiResponse[RoundSubmitResponse]:
     try:
-        args = SubmitRoundArgs(user_id=current_user.id, user_email=current_user.email, round_id=body.round_id, user_prompt=body.user_prompt, user_display_name=current_user.name)
+        args = SubmitRoundArgs(
+            user_id=current_user.id if current_user else None,
+            user_email=current_user.email if current_user else None,
+            user_display_name=current_user.name if current_user else None,
+            round_id=body.round_id,
+            user_prompt=body.user_prompt,
+        )
         result = submit_round(session=session, args=args)
         return ApiResponse(data=result)
     except AppException:
@@ -32,6 +38,11 @@ def submit_endpoint(
     except Exception as exc:
         logger.error(
             "Unexpected error in submit_round",
-            extra={"channel": CHANNEL, "feature": SUBMIT_ROUND_FEATURE, "error": str(exc), "user": current_user.email},
+            extra={
+                "channel": CHANNEL,
+                "feature": SUBMIT_ROUND_FEATURE,
+                "error": str(exc),
+                "user": current_user.email if current_user else "guest",
+            },
         )
         raise SubmitRoundException(RoundError.UNKNOWN_ERROR) from exc

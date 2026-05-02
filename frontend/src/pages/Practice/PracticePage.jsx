@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { getRoundHistory, startRound, submitPrompt } from "../../api";
+import { useAuth } from "../../components/AuthContext";
 import ErrorBanner from "../../components/ErrorBanner";
 import styles from "./PracticePage.module.css";
 
@@ -28,6 +30,7 @@ function loadSavedDifficulty() {
 }
 
 export default function PracticePage() {
+  const { user } = useAuth();
   const savedState = loadSavedPracticeState();
 
   const [referenceImage, setReferenceImage] = useState(savedState?.referenceImage ?? null);
@@ -87,6 +90,7 @@ export default function PracticePage() {
   }, []);
 
   useEffect(() => {
+    if (!user) return undefined;
     let cancelled = false;
     getRoundHistory()
       .then((rows) => {
@@ -103,7 +107,7 @@ export default function PracticePage() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     if (!referenceRoundId || !referenceImage) return;
@@ -221,6 +225,17 @@ export default function PracticePage() {
 
       <div className={styles.container}>
         <h1 className={styles.title}>Practice Mode</h1>
+
+        {!user && (
+          <div className={styles.guestBanner}>
+            Playing as guest — your scores stay on this device.{" "}
+            <Link to="/register" className={styles.guestBannerLink}>
+              Create an account
+            </Link>
+            {" "}to save your history, track progress, and join the daily
+            challenge.
+          </div>
+        )}
 
         <div className={styles.controlsRow}>
         <label className={styles.controlLabel} htmlFor="practice-difficulty-select">

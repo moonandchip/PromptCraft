@@ -26,6 +26,28 @@
   margin: 0 0 1.5rem;
 }
 
+.guestBanner {
+  background: #fff7dc;
+  border: 3px solid #3b2f1f;
+  box-shadow: 0 5px 0 #3b2f1f;
+  padding: 0.85rem 1.1rem;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #1e1e1e;
+  line-height: 1.4;
+}
+
+.guestBannerLink {
+  color: #1e3a8a;
+  font-weight: 700;
+  text-decoration: underline;
+}
+
+.guestBannerLink:hover {
+  color: #1e40af;
+}
+
 /* Top control bar (difficulty + round badge) — sits in its own retro card */
 .controlsRow {
   background: #f7f1d5;
