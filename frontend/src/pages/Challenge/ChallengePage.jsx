@@ -350,7 +350,7 @@ export default function ChallengePage() {
           </div>
         ) : leaderboard.entries.length === 0 ? (
           <div className={styles.emptyLeaderboard}>
-            No scores yet today — be the first!
+            No scores yet today, be the first!
           </div>
         ) : (
           <ol className={styles.leaderboardList}>
