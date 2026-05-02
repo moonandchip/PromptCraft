@@ -31,3 +31,8 @@ class SubmitChallengeException(AppException):
 class GetLeaderboardException(AppException):
     def __init__(self, error: ChallengeError = ChallengeError.UNKNOWN_ERROR, message: str | None = None) -> None:
         super().__init__(error, 500, message)
+
+
+class GetArchiveException(AppException):
+    def __init__(self, error: ChallengeError = ChallengeError.UNKNOWN_ERROR, message: str | None = None) -> None:
+        super().__init__(error, 500, message)

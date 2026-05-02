@@ -1,0 +1,39 @@
+# ----------------------------------------------------------------------------
+# Local-only file. Copy to terraform.tfvars (gitignored) and fill in.
+# In CI these values come from GitHub repo Variables (TF_VAR_*) and Secrets,
+# so this file is only used for ad-hoc local plans / applies.
+# ----------------------------------------------------------------------------
+
+# Required ------------------------------------------------------------------
+
+github_repository = "OWNER/PromptCraft"
+ghcr_username     = "your-github-username"
+
+# Secrets — never commit. Generate with:
+#   openssl rand -base64 24 | tr -d '+/=' | cut -c1-24    (db_password)
+#   openssl rand -base64 48 | tr -d '+/=' | cut -c1-48    (auth_secret)
+ghcr_token       = "ghp_xxx_with_read_packages_scope"
+db_password      = "PASTE_RANDOM_24CHARS_AZ09__-"
+auth_secret      = "PASTE_RANDOM_48CHARS_BASE64_NO_SPECIALS"
+leonardo_api_key = "leo_xxx"
+openai_api_key   = "sk-xxx"   # leave "" to disable prompt feedback
+
+# Domain ---------------------------------------------------------------------
+# With a real domain at an external registrar:
+domain_name     = "promptcrafts.net"
+acme_email      = "you@example.com"
+frontend_origin = "https://promptcrafts.net"
+# route53_zone_id intentionally blank — create A records at your registrar
+# pointing api.promptcrafts.net + auth.promptcrafts.net at the EIP output.
+
+# Optional sslip.io fallback (mutually exclusive with domain_name):
+# use_sslip = true
+# domain_name = ""
+
+# Optional overrides ---------------------------------------------------------
+# aws_region          = "us-east-1"
+# instance_type       = "t3.small"
+# data_volume_size_gb = 20
+# log_retention_days  = 30
+# ssh_public_key      = "ssh-ed25519 AAAAC3... you@laptop"
+# ssh_allowed_cidrs   = ["1.2.3.4/32"]

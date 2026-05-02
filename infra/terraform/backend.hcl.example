@@ -1,0 +1,10 @@
+# Local-only. Copy to backend.hcl (gitignored) and fill in with the outputs
+# from infra/bootstrap/. Then init with:
+#   terraform init -backend-config=backend.hcl
+#
+# In CI the same three values are passed individually via -backend-config
+# flags from infra.yml; this file is just for ad-hoc local runs.
+
+bucket         = "promptcraft-tf-state-XXXXXXXXXXXX"
+region         = "us-east-1"
+dynamodb_table = "promptcraft-tf-lock"

@@ -17,3 +17,9 @@ class SubmitChallengeArgs:
 @dataclass
 class GetLeaderboardArgs:
     limit: int
+
+
+@dataclass
+class GetArchiveArgs:
+    user_id: str
+    limit: int = 30

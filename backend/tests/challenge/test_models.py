@@ -20,6 +20,10 @@ class TestChallengeSubmitRequest(unittest.TestCase):
         with self.assertRaises(ValidationError):
             ChallengeSubmitRequest(user_prompt="")
 
+    def test_too_short_prompt_raises(self):
+        with self.assertRaises(ValidationError):
+            ChallengeSubmitRequest(user_prompt="too short")
+
     def test_prompt_max_length_boundary(self):
         req = ChallengeSubmitRequest(user_prompt="x" * 2000)
         self.assertEqual(len(req.user_prompt), 2000)

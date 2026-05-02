@@ -6,6 +6,7 @@ import RegisterPage from "../pages/Register/RegisterPage";
 import PracticePage from "../pages/Practice/PracticePage";
 import ProgressPage from "../pages/Progress/ProgressPage";
 import ChallengePage from "../pages/Challenge/ChallengePage";
+import ArchivePage from "../pages/Challenge/ArchivePage";
 import HowToPlayPage from "../pages/HowToPlay/HowtoPlayPage";
 
 import MainLayout from "../layouts/MainLayout";
@@ -24,6 +25,7 @@ export default function AppRoutes() {
           <Route path="/practice" element={<PracticePage />} />
           <Route path="/progress" element={<ProgressPage />} />
           <Route path="/challenge" element={<ChallengePage />} />
+          <Route path="/challenge/archive" element={<ArchivePage />} />
         </Route>
       </Route>
     </Routes>

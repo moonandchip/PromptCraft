@@ -39,7 +39,8 @@ def test_current_route_returns_payload_with_authenticated_user():
                  "difficulty": "medium",
                  "reference_image": "ancient-temple.jpg",
              }), \
-             patch.object(view_module, "get_user_challenge_progress", return_value=(1, 55.0)):
+             patch.object(view_module, "get_user_challenge_progress", return_value=(1, 55.0)), \
+             patch.object(view_module, "get_user_streak", return_value=(2, 4)):
             client = TestClient(app)
             response = client.get(
                 "/challenge/current",

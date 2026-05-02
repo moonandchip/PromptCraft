@@ -3,7 +3,11 @@ from pydantic import BaseModel, Field
 
 class RoundSubmitRequest(BaseModel):
     round_id: str = Field(min_length=1, max_length=100)
-    user_prompt: str = Field(min_length=1, max_length=2000)
+    user_prompt: str = Field(
+        min_length=10,
+        max_length=2000,
+        description="Describe the scene in at least 10 characters.",
+    )
 
 
 class RoundSubmitResponse(BaseModel):

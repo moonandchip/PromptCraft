@@ -24,13 +24,15 @@ class TestUtcDayBounds(unittest.TestCase):
 
 class TestSelectRoundIdForDate(unittest.TestCase):
     def test_select_uses_modulo_of_ordinal(self):
-        with patch.object(module, "ROUNDS", [{"id": "r1"}, {"id": "r2"}, {"id": "r3"}]):
+        with patch.object(module, "ROUNDS", [{"id": "r1"}, {"id": "r2"}, {"id": "r3"}]), \
+             patch.object(module, "CHALLENGE_ROUND_IDS", {"r1", "r2", "r3"}):
             day = datetime(2026, 4, 20, tzinfo=timezone.utc)
             expected = [{"id": "r1"}, {"id": "r2"}, {"id": "r3"}][day.toordinal() % 3]["id"]
             self.assertEqual(module._select_round_id_for_date(day), expected)
 
     def test_select_rotates_across_consecutive_days(self):
-        with patch.object(module, "ROUNDS", [{"id": "r1"}, {"id": "r2"}]):
+        with patch.object(module, "ROUNDS", [{"id": "r1"}, {"id": "r2"}]), \
+             patch.object(module, "CHALLENGE_ROUND_IDS", {"r1", "r2"}):
             day1 = datetime(2026, 4, 20, tzinfo=timezone.utc)
             day2 = day1 + timedelta(days=1)
             self.assertNotEqual(
@@ -40,6 +42,12 @@ class TestSelectRoundIdForDate(unittest.TestCase):
 
     def test_select_raises_when_no_rounds_configured(self):
         with patch.object(module, "ROUNDS", []):
+            with self.assertRaises(RuntimeError):
+                module._select_round_id_for_date(_FIXED_NOW)
+
+    def test_select_raises_when_no_rounds_match_challenge_subset(self):
+        with patch.object(module, "ROUNDS", [{"id": "non-challenge"}]), \
+             patch.object(module, "CHALLENGE_ROUND_IDS", {"different-id"}):
             with self.assertRaises(RuntimeError):
                 module._select_round_id_for_date(_FIXED_NOW)
 
@@ -67,7 +75,8 @@ class TestGetOrCreateCurrentChallenge(unittest.TestCase):
         mock_create.return_value = created
         session = MagicMock()
 
-        with patch.object(module, "ROUNDS", [{"id": "fixed-round"}]):
+        with patch.object(module, "ROUNDS", [{"id": "fixed-round"}]), \
+             patch.object(module, "CHALLENGE_ROUND_IDS", {"fixed-round"}):
             result = module.get_or_create_current_challenge(session=session)
 
         self.assertIs(result, created)

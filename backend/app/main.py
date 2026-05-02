@@ -43,9 +43,23 @@ async def lifespan(app: FastAPI):
 
 app = FastAPI(title="PromptCraft API", lifespan=lifespan)
 
+
+def _allowed_origins() -> list[str]:
+    """Returns the list of allowed CORS origins.
+
+    Set `CORS_ALLOWED_ORIGINS` to a comma-separated list (e.g.
+    "https://app.promptcraft.io,https://staging.promptcraft.io"). When unset,
+    falls back to local development defaults.
+    """
+    raw = os.environ.get("CORS_ALLOWED_ORIGINS", "").strip()
+    if not raw:
+        return ["http://localhost:5173"]
+    return [origin.strip() for origin in raw.split(",") if origin.strip()]
+
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=_allowed_origins(),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

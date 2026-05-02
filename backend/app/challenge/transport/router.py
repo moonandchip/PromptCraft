@@ -3,7 +3,8 @@ from fastapi import APIRouter, status
 from app.response import ApiResponse
 
 from ..constants import ROUTER_PREFIX, ROUTER_TAG
-from ..models import ChallengeStateResponse, ChallengeSubmitResponse, LeaderboardResponse
+from ..models import ArchiveResponse, ChallengeStateResponse, ChallengeSubmitResponse, LeaderboardResponse
+from .archive_endpoint import archive_endpoint
 from .get_current_endpoint import get_current_endpoint
 from .leaderboard_endpoint import leaderboard_endpoint
 from .submit_endpoint import submit_endpoint
@@ -31,5 +32,13 @@ router.add_api_route(
     endpoint=leaderboard_endpoint,
     methods=["GET"],
     response_model=ApiResponse[LeaderboardResponse],
+    status_code=status.HTTP_200_OK,
+)
+
+router.add_api_route(
+    path="/archive",
+    endpoint=archive_endpoint,
+    methods=["GET"],
+    response_model=ApiResponse[ArchiveResponse],
     status_code=status.HTTP_200_OK,
 )

@@ -27,6 +27,8 @@ def _args(user_prompt="a vivid scene"):
 
 
 class TestSubmitChallenge(unittest.TestCase):
+    @patch.object(module, "get_user_streak", autospec=True, return_value=(3, 5))
+    @patch.object(module, "update_user_streak", autospec=True, return_value=(3, 5))
     @patch.object(module, "get_user_challenge_progress", autospec=True)
     @patch.object(module, "save_attempt", autospec=True)
     @patch.object(module, "save_prompt", autospec=True)
@@ -47,6 +49,8 @@ class TestSubmitChallenge(unittest.TestCase):
         mock_save_prompt,
         mock_save_attempt,
         mock_get_progress,
+        mock_update_streak,
+        mock_get_streak,
     ):
         mock_get_or_create.return_value = _challenge()
         mock_get_round.return_value = {
@@ -68,10 +72,13 @@ class TestSubmitChallenge(unittest.TestCase):
         self.assertEqual(response.attempts_used, 1)
         self.assertEqual(response.attempts_remaining, 2)
         self.assertEqual(response.best_score, 73.2)
+        self.assertEqual(response.current_streak, 3)
+        self.assertEqual(response.longest_streak, 5)
         kwargs = mock_save_attempt.call_args.kwargs
         self.assertEqual(kwargs["challenge_id"], "c-1")
         self.assertEqual(kwargs["round_id"], "ancient-temple")
         session.commit.assert_called_once_with()
+        mock_update_streak.assert_called_once()
 
     @patch.object(module, "get_round_by_id", autospec=True)
     @patch.object(module, "get_or_create_current_challenge", autospec=True)
@@ -127,6 +134,8 @@ class TestSubmitChallenge(unittest.TestCase):
 
         self.assertEqual(ctx.exception.status_code, 504)
 
+    @patch.object(module, "get_user_streak", autospec=True, return_value=(0, 0))
+    @patch.object(module, "update_user_streak", autospec=True, return_value=(0, 0))
     @patch.object(module, "get_user_challenge_progress", autospec=True)
     @patch.object(module, "save_attempt", autospec=True)
     @patch.object(module, "save_prompt", autospec=True)
@@ -147,6 +156,8 @@ class TestSubmitChallenge(unittest.TestCase):
         mock_save_prompt,
         mock_save_attempt,
         mock_get_progress,
+        mock_update_streak,
+        mock_get_streak,
     ):
         mock_get_or_create.return_value = _challenge()
         mock_get_round.return_value = {"id": "ancient-temple", "difficulty": "medium", "reference_image": "x.jpg"}
@@ -199,6 +210,8 @@ class TestSubmitChallenge(unittest.TestCase):
         self.assertEqual(ctx.exception.status_code, 500)
         session.rollback.assert_called_once_with()
 
+    @patch.object(module, "get_user_streak", autospec=True, return_value=(1, 1))
+    @patch.object(module, "update_user_streak", autospec=True, return_value=(1, 1))
     @patch.object(module, "get_user_challenge_progress", autospec=True)
     @patch.object(module, "save_attempt", autospec=True)
     @patch.object(module, "save_prompt", autospec=True)
@@ -219,6 +232,8 @@ class TestSubmitChallenge(unittest.TestCase):
         mock_save_prompt,
         mock_save_attempt,
         mock_get_progress,
+        mock_update_streak,
+        mock_get_streak,
     ):
         mock_get_or_create.return_value = _challenge(max_attempts=1)
         mock_get_round.return_value = {"id": "ancient-temple", "difficulty": "medium", "reference_image": "x.jpg"}

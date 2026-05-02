@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { Link } from "react-router-dom";
 import {
   getChallengeLeaderboard,
   getCurrentChallenge,
@@ -30,35 +31,44 @@ export default function ChallengePage() {
   const [leaderboard, setLeaderboard] = useState({ entries: [] });
   const [prompt, setPrompt] = useState("");
   const [loadingChallenge, setLoadingChallenge] = useState(true);
+  const [loadingLeaderboard, setLoadingLeaderboard] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [generatedImage, setGeneratedImage] = useState(null);
   const [latestScore, setLatestScore] = useState(null);
+  const [feedback, setFeedback] = useState([]);
+  const [showFeedback, setShowFeedback] = useState(true);
   const [error, setError] = useState(null);
   const [loadError, setLoadError] = useState(null);
   const [, setTick] = useState(0);
 
   useEffect(() => {
     let cancelled = false;
-    const load = async () => {
-      setLoadingChallenge(true);
-      setLoadError(null);
-      try {
-        const [current, board] = await Promise.all([
-          getCurrentChallenge(),
-          getChallengeLeaderboard(10),
-        ]);
-        if (cancelled) return;
-        setChallenge(current);
-        setLeaderboard(board);
-      } catch (err) {
-        if (!cancelled) {
-          setLoadError(err.message || "Failed to load challenge.");
-        }
-      } finally {
+    setLoadingChallenge(true);
+    setLoadingLeaderboard(true);
+    setLoadError(null);
+
+    getCurrentChallenge()
+      .then((current) => {
+        if (!cancelled) setChallenge(current);
+      })
+      .catch((err) => {
+        if (!cancelled) setLoadError(err.message || "Failed to load challenge.");
+      })
+      .finally(() => {
         if (!cancelled) setLoadingChallenge(false);
-      }
-    };
-    load();
+      });
+
+    getChallengeLeaderboard(10)
+      .then((board) => {
+        if (!cancelled) setLeaderboard(board);
+      })
+      .catch(() => {
+        // Leaderboard failure shouldn't block the page; keep the existing state.
+      })
+      .finally(() => {
+        if (!cancelled) setLoadingLeaderboard(false);
+      });
+
     return () => {
       cancelled = true;
     };
@@ -80,27 +90,58 @@ export default function ChallengePage() {
   const limitReached = challenge ? attemptsRemaining === 0 : false;
 
   const handleSubmit = async () => {
-    if (!prompt.trim() || submitting || limitReached) return;
+    if (prompt.trim().length < 10 || submitting || limitReached) return;
     setSubmitting(true);
     setError(null);
     setGeneratedImage(null);
     setLatestScore(null);
+    setFeedback([]);
+    setShowFeedback(true);
+
+    // Optimistically bump the attempts counter so the user sees feedback
+    // immediately, even though the actual submit takes ~10s. Reverted on error.
+    const optimisticChallenge = challenge;
+    setChallenge((prev) =>
+      prev
+        ? { ...prev, attempts_used: Math.min(prev.attempts_used + 1, prev.max_attempts) }
+        : prev,
+    );
+
     try {
       const result = await submitChallengePrompt(prompt.trim());
       setGeneratedImage(result.generated_image_url);
       setLatestScore(Number(result.similarity_score));
+      setFeedback(result.feedback || []);
       setChallenge((prev) =>
         prev
           ? {
               ...prev,
               attempts_used: result.attempts_used,
               best_score: Math.max(prev.best_score, Number(result.best_score)),
+              current_streak: result.current_streak ?? prev.current_streak,
+              longest_streak: result.longest_streak ?? prev.longest_streak,
             }
           : prev,
       );
-      const board = await getChallengeLeaderboard(10);
-      setLeaderboard(board);
+      // Refetch on the last attempt so target_prompt comes through from the backend.
+      if (result.attempts_remaining === 0) {
+        try {
+          const refreshed = await getCurrentChallenge();
+          setChallenge(refreshed);
+        } catch {
+          // Non-fatal: the user still sees the result; just no target_prompt reveal.
+        }
+      }
+      setLoadingLeaderboard(true);
+      try {
+        const board = await getChallengeLeaderboard(10);
+        setLeaderboard(board);
+      } finally {
+        setLoadingLeaderboard(false);
+      }
     } catch (err) {
+      // Roll back the optimistic counter bump.
+      setChallenge(optimisticChallenge);
       setError(err.message || "Failed to submit challenge prompt.");
     } finally {
       setSubmitting(false);
@@ -109,22 +150,31 @@ export default function ChallengePage() {
 
   if (loadingChallenge) {
     return (
-      <div className={styles.page}>
-        <h1 className={styles.title}>Daily Challenge</h1>
-        <div className={styles.loadingBox}>
-          <div className={styles.spinner}></div>
-          <span>Loading today&apos;s challenge...</span>
+      <main className={styles.page}>
+        <div className={styles.backgroundDecor1}></div>
+        <div className={styles.backgroundDecor2}></div>
+        <div className={styles.backgroundDecor3}></div>
+        <div className={styles.container}>
+          <h1 className={styles.title}>Daily Challenge</h1>
+          <div className={styles.loadingBox}>
+            <div className={styles.spinner}></div>
+            <span>Loading today&apos;s challenge...</span>
+          </div>
         </div>
-      </div>
+      </main>
     );
   }
 
   return (
-    <div className={styles.page}>
-      <h1 className={styles.title}>Daily Challenge</h1>
+    <main className={styles.page}>
+      <div className={styles.backgroundDecor1}></div>
+      <div className={styles.backgroundDecor2}></div>
+      <div className={styles.backgroundDecor3}></div>
+      <div className={styles.container}>
+        <h1 className={styles.title}>Daily Challenge</h1>
 
-      <ErrorBanner message={loadError} onClose={() => setLoadError(null)} />
-      <ErrorBanner message={error} onClose={() => setError(null)} />
+        <ErrorBanner message={loadError} onClose={() => setLoadError(null)} />
+        <ErrorBanner message={error} onClose={() => setError(null)} />
 
       {challenge && (
         <div className={styles.headerCard}>
@@ -146,6 +196,17 @@ export default function ChallengePage() {
               </span>
             </div>
             <div className={styles.headerCell}>
+              <span className={styles.headerLabel}>Streak</span>
+              <span className={styles.headerValue}>
+                🔥 {challenge.current_streak ?? 0}
+                {challenge.longest_streak > (challenge.current_streak ?? 0) && (
+                  <span className={styles.streakBest}>
+                    {" "}(best {challenge.longest_streak})
+                  </span>
+                )}
+              </span>
+            </div>
+            <div className={styles.headerCell}>
               <span className={styles.headerLabel}>Resets In</span>
               <span className={styles.headerValue}>
                 {formatTimeRemaining(challenge.period_end)}
@@ -154,7 +215,10 @@ export default function ChallengePage() {
           </div>
           <div className={styles.attemptRules}>
             You get <strong>{challenge.max_attempts}</strong> attempts per day.
-            Best score wins.
+            Best score wins.{" "}
+            <Link to="/challenge/archive" className={styles.archiveLink}>
+              View archive →
+            </Link>
           </div>
         </div>
       )}
@@ -180,7 +244,10 @@ export default function ChallengePage() {
             {submitting ? (
               <span className={styles.placeholder}>
                 <div className={styles.spinner}></div>
-                <span>Generating...</span>
+                <span>Generating your image...</span>
+                <span className={styles.placeholderHint}>
+                  This can take up to a minute.
+                </span>
               </span>
             ) : generatedImage ? (
               <img src={generatedImage} alt="Generated" />
@@ -200,10 +267,16 @@ export default function ChallengePage() {
           className={styles.promptInput}
           value={prompt}
           onChange={(e) => setPrompt(e.target.value.slice(0, 2000))}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+              e.preventDefault();
+              handleSubmit();
+            }
+          }}
           placeholder={
             limitReached
               ? "You've used all your attempts for today. Come back tomorrow!"
-              : "Describe what you want the AI to generate..."
+              : "Describe what you want the AI to generate... (Ctrl+Enter to submit)"
           }
           disabled={submitting || limitReached}
         />
@@ -211,11 +284,15 @@ export default function ChallengePage() {
           <button
             onClick={handleSubmit}
             className={styles.generateButton}
-            disabled={!prompt.trim() || submitting || limitReached}
+            disabled={prompt.trim().length < 10 || submitting || limitReached}
           >
             {limitReached ? "Limit Reached" : "Submit Attempt"}
           </button>
-          <span className={styles.charCounter}>{prompt.length} / 2000</span>
+          <span className={styles.charCounter}>
+            {prompt.length < 10 && prompt.length > 0
+              ? `${prompt.length} / 2000 (min 10)`
+              : `${prompt.length} / 2000`}
+          </span>
         </div>
       </div>
 
@@ -231,9 +308,47 @@ export default function ChallengePage() {
         </div>
       )}
 
+      {feedback.length > 0 && (
+        <div className={styles.tipsSection}>
+          <div className={styles.tipsHeader}>
+            <h3 className={styles.tipsTitle}>Hints</h3>
+            <button
+              type="button"
+              className={styles.tipsToggle}
+              onClick={() => setShowFeedback((prev) => !prev)}
+            >
+              {showFeedback ? "Hide" : "Show"}
+            </button>
+          </div>
+          {showFeedback && (
+            <ul className={styles.tipsList}>
+              {feedback.map((tip) => (
+                <li key={tip} className={styles.tipItem}>{tip}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+
+      {limitReached && challenge?.target_prompt && (
+        <div className={styles.revealCard}>
+          <h3 className={styles.revealTitle}>The prompt behind today&apos;s image</h3>
+          <p className={styles.revealPrompt}>{challenge.target_prompt}</p>
+          <p className={styles.revealHint}>
+            Compare it with your prompts to see what landed and what missed.
+            Come back tomorrow for a new round.
+          </p>
+        </div>
+      )}
+
       <div className={styles.leaderboardSection}>
         <h2 className={styles.leaderboardTitle}>Leaderboard</h2>
-        {leaderboard.entries.length === 0 ? (
+        {loadingLeaderboard ? (
+          <div className={styles.emptyLeaderboard}>
+            <div className={styles.spinner}></div>
+            <span>Loading leaderboard...</span>
+          </div>
+        ) : leaderboard.entries.length === 0 ? (
           <div className={styles.emptyLeaderboard}>
             No scores yet today — be the first!
           </div>
@@ -263,6 +378,7 @@ export default function ChallengePage() {
           </ol>
         )}
       </div>
-    </div>
+      </div>
+    </main>
   );
 }
