@@ -175,6 +175,26 @@ variable "openai_api_key" {
   sensitive   = true
 }
 
+variable "gmail_user" {
+  description = "Gmail address used to send password-reset emails. Empty disables outbound email (the reset link is logged instead)."
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
+variable "gmail_app_password" {
+  description = "16-char Google App Password from https://myaccount.google.com/apppasswords. Empty disables outbound email."
+  type        = string
+  default     = ""
+  sensitive   = true
+}
+
+variable "email_from" {
+  description = "From header for transactional emails. Empty falls back to 'PromptCraft <gmail_user>'."
+  type        = string
+  default     = ""
+}
+
 ################################################################################
 # Logging
 ################################################################################

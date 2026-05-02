@@ -113,6 +113,49 @@ export function clearCachedUser() {
 }
 
 /**
+ * Request a password reset email. The auth service responds 200 even if the
+ * email isn't registered (to prevent enumeration). For now the reset link
+ * lands in the auth service's server logs.
+ * @param {string} email
+ */
+export async function requestPasswordReset(email) {
+  setGlobalLoading(true);
+  try {
+    const res = await fetch(`${AUTH_URL}/api/forgot-password`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || "Could not send reset email.");
+    return data;
+  } finally {
+    setGlobalLoading(false);
+  }
+}
+
+/**
+ * Consume a password reset token and set a new password.
+ * @param {string} token
+ * @param {string} password
+ */
+export async function resetPassword(token, password) {
+  setGlobalLoading(true);
+  try {
+    const res = await fetch(`${AUTH_URL}/api/reset-password`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token, password }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || "Could not reset password.");
+    return data;
+  } finally {
+    setGlobalLoading(false);
+  }
+}
+
+/**
  * Fetch the currently logged-in user's info.
  * Shows global loading while the request is in progress.
  * @returns {Promise<{ user: object }>} User data

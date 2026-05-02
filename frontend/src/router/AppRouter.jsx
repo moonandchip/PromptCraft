@@ -3,6 +3,8 @@ import { Routes, Route } from "react-router-dom";
 import HomePage from "../pages/Home/HomePage";
 import LoginPage from "../pages/Login/LoginPage";
 import RegisterPage from "../pages/Register/RegisterPage";
+import ForgotPasswordPage from "../pages/ForgotPassword/ForgotPasswordPage";
+import ResetPasswordPage from "../pages/ResetPassword/ResetPasswordPage";
 import PracticePage from "../pages/Practice/PracticePage";
 import ProgressPage from "../pages/Progress/ProgressPage";
 import ChallengePage from "../pages/Challenge/ChallengePage";
@@ -21,6 +23,8 @@ export default function AppRoutes() {
         <Route path="/how-to-play" element={<HowToPlayPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+        <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
 
         <Route path="/practice" element={<PracticePage />} />
 
