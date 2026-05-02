@@ -7,6 +7,7 @@ import PracticePage from "../pages/Practice/PracticePage";
 import ProgressPage from "../pages/Progress/ProgressPage";
 import ChallengePage from "../pages/Challenge/ChallengePage";
 import ArchivePage from "../pages/Challenge/ArchivePage";
+import NotFoundPage from "../pages/NotFound/NotFoundPage";
 import HowToPlayPage from "../pages/HowToPlay/HowtoPlayPage";
 
 import MainLayout from "../layouts/MainLayout";
@@ -28,6 +29,8 @@ export default function AppRoutes() {
           <Route path="/challenge" element={<ChallengePage />} />
           <Route path="/challenge/archive" element={<ArchivePage />} />
         </Route>
+
+        <Route path="*" element={<NotFoundPage />} />
       </Route>
     </Routes>
   );

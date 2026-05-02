@@ -1,7 +1,9 @@
 import { getToken } from "./auth";
 import { setGlobalLoading } from "./components/LoadingContext";
 
-const VITE_API_URL = import.meta.env.VITE_API_URL;
+// Strip a trailing slash so `${VITE_API_URL}/round/start` never produces a
+// double-slash, regardless of whether the env var is configured with one.
+const VITE_API_URL = (import.meta.env.VITE_API_URL ?? "").replace(/\/+$/, "");
 
 /**
  * Wrapper around fetch() that automatically attaches JWT, handles errors,

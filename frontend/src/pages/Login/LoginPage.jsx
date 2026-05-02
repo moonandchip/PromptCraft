@@ -56,9 +56,14 @@ export default function LoginPage() {
   }
 
   return (
-    <div className={styles.container}>
+    <main className={styles.page}>
+      <div className={styles.backgroundDecor1}></div>
+      <div className={styles.backgroundDecor2}></div>
+      <div className={styles.backgroundDecor3}></div>
+
       <div className={styles.card}>
-        <h1 className={styles.title}>Login</h1>
+        <p className={styles.kicker}>Welcome back</p>
+        <h1 className={styles.title}>Sign in</h1>
 
         {sessionExpired && (
           <output className={styles.sessionExpired}>
@@ -66,26 +71,31 @@ export default function LoginPage() {
           </output>
         )}
 
-        {/* Error Banner */}
         <ErrorBanner message={error} onClose={() => setError(null)} />
 
         <form onSubmit={handleSubmit} className={styles.form}>
+          <label className={styles.fieldLabel} htmlFor="login-email">Email</label>
           <input
+            id="login-email"
             className={styles.input}
             type="email"
-            placeholder="Email"
+            placeholder="you@example.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            autoComplete="email"
             required
           />
 
+          <label className={styles.fieldLabel} htmlFor="login-password">Password</label>
           <div className={styles.passwordWrapper}>
             <input
+              id="login-password"
               className={styles.input}
               type={showPassword ? "text" : "password"}
-              placeholder="Password"
+              placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              autoComplete="current-password"
               required
             />
             <button
@@ -98,15 +108,18 @@ export default function LoginPage() {
             </button>
           </div>
 
-          <button className={styles.button} type="submit" disabled={loading}>
+          <button className={styles.primaryButton} type="submit" disabled={loading}>
             {loading ? "Logging in..." : "Login"}
           </button>
         </form>
 
-        <Link to="/register" className={styles.link}>
-          Don't have an account? Register
-        </Link>
+        <p className={styles.linkRow}>
+          Don&apos;t have an account?{" "}
+          <Link to="/register" className={styles.link}>
+            Register
+          </Link>
+        </p>
       </div>
-    </div>
+    </main>
   );
 }
