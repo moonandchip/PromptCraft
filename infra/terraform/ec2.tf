@@ -3,7 +3,7 @@
 ################################################################################
 
 resource "aws_key_pair" "admin" {
-  count      = var.ssh_public_key != "" ? 1 : 0
+  count      = trimspace(var.ssh_public_key) != "" ? 1 : 0
   key_name   = "${local.name_prefix}-admin"
   public_key = var.ssh_public_key
 }
@@ -52,7 +52,7 @@ resource "aws_instance" "app" {
   subnet_id                   = data.aws_subnet.primary.id
   vpc_security_group_ids      = [aws_security_group.app.id]
   iam_instance_profile        = aws_iam_instance_profile.app.name
-  key_name                    = var.ssh_public_key != "" ? aws_key_pair.admin[0].key_name : null
+  key_name                    = trimspace(var.ssh_public_key) != "" ? aws_key_pair.admin[0].key_name : null
   associate_public_ip_address = true
 
   user_data                   = local.user_data
