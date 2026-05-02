@@ -6,7 +6,7 @@
 ################################################################################
 
 resource "aws_route53_record" "api" {
-  count   = var.domain_name != "" && var.route53_zone_id != "" ? 1 : 0
+  count   = var.domain_name != "" && trimspace(var.route53_zone_id) != "" ? 1 : 0
   zone_id = var.route53_zone_id
   name    = local.api_host
   type    = "A"
@@ -15,7 +15,7 @@ resource "aws_route53_record" "api" {
 }
 
 resource "aws_route53_record" "auth" {
-  count   = var.domain_name != "" && var.route53_zone_id != "" ? 1 : 0
+  count   = var.domain_name != "" && trimspace(var.route53_zone_id) != "" ? 1 : 0
   zone_id = var.route53_zone_id
   name    = local.auth_host
   type    = "A"
