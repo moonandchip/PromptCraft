@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { getMe, login, register } from "../../auth";
 import { useAuth } from "../../components/AuthContext";
 import { validateEmail, validatePassword } from "../../utils/authValidation";
@@ -49,30 +49,40 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className={styles.container}>
-      <div className={styles.card}>
-        <h1 className={styles.title}>Create Account</h1>
+    <main className={styles.page}>
+      <div className={styles.backgroundDecor1}></div>
+      <div className={styles.backgroundDecor2}></div>
+      <div className={styles.backgroundDecor3}></div>
 
-        {/* Error Banner */}
+      <div className={styles.card}>
+        <p className={styles.kicker}>Join the game</p>
+        <h1 className={styles.title}>Create account</h1>
+
         <ErrorBanner message={error} onClose={() => setError(null)} />
 
         <form onSubmit={handleSubmit} className={styles.form}>
+          <label className={styles.fieldLabel} htmlFor="register-email">Email</label>
           <input
+            id="register-email"
             className={styles.input}
             type="email"
-            placeholder="Email"
+            placeholder="you@example.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            autoComplete="email"
             required
           />
 
+          <label className={styles.fieldLabel} htmlFor="register-password">Password</label>
           <div className={styles.passwordWrapper}>
             <input
+              id="register-password"
               className={styles.input}
               type={showPassword ? "text" : "password"}
-              placeholder="Password"
+              placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              autoComplete="new-password"
               required
               minLength={8}
             />
@@ -89,11 +99,18 @@ export default function RegisterPage() {
             Use 8+ characters with at least one letter and one number.
           </p>
 
-          <button className={styles.button} type="submit" disabled={loading}>
+          <button className={styles.primaryButton} type="submit" disabled={loading}>
             {loading ? "Creating account..." : "Register"}
           </button>
         </form>
+
+        <p className={styles.linkRow}>
+          Already have an account?{" "}
+          <Link to="/login" className={styles.link}>
+            Sign in
+          </Link>
+        </p>
       </div>
-    </div>
+    </main>
   );
 }

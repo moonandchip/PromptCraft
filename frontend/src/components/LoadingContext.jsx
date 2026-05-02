@@ -20,7 +20,10 @@ export function LoadingProvider({ children }) {
       {children}
       {loading && (
         <div className={styles.loaderOverlay}>
-          <div className={styles.spinner}></div>
+          <div className={styles.spinnerCard}>
+            <div className={styles.spinner}></div>
+            <span className={styles.label}>Loading...</span>
+          </div>
         </div>
       )}
     </LoadingContext.Provider>

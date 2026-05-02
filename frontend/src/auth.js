@@ -1,6 +1,7 @@
 import { setGlobalLoading } from "./components/LoadingContext";
 
-const AUTH_URL = import.meta.env.VITE_AUTH_URL;
+// Strip trailing slashes so concatenated paths can't produce a double-slash.
+const AUTH_URL = (import.meta.env.VITE_AUTH_URL ?? "").replace(/\/+$/, "");
 
 /**
  * Register a new user with email and password.

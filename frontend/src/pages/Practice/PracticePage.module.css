@@ -149,6 +149,8 @@
   padding: 1rem;
   display: flex;
   flex-direction: column;
+  align-items: center;
+  box-sizing: border-box;
 }
 
 .label {
@@ -164,11 +166,13 @@
 .imageWrapper {
   position: relative;
   width: 100%;
+  max-width: 100%;
   aspect-ratio: 1 / 1;
   border: 3px solid #3b2f1f;
   overflow: hidden;
   background-color: #fff7dc;
   display: flex;
+  box-sizing: border-box;
 }
 
 .imageWrapper img {
