@@ -148,12 +148,19 @@ def generate_image(user_prompt: str) -> str:
         log.info("Leonardo returned image synchronously: %s", immediate_url)
         return immediate_url
 
-    # If we got back a list with no image URL, the API contract changed in
-    # a way we don't understand. Surface as a 502 so the user gets a clean
-    # error and we have full payload in the logs to debug.
+    # If we got back a list with no image URL, Leonardo returned a
+    # GraphQL-style error array (e.g. "Insufficient tokens") or the API
+    # contract changed. Surface a 502 with the actual error message so
+    # operators can diagnose without log access.
     if not isinstance(start_response, dict):
         log.error("Leonardo POST returned non-dict response: %s", json.dumps(start_response))
-        raise GenerationError(502, f"{ERR_GENERATION_FAILED}: unexpected response shape")
+        detail = "unexpected response shape"
+        if isinstance(start_response, list) and start_response:
+            first = start_response[0]
+            if isinstance(first, dict):
+                # Leonardo's error envelope: [{ "message": "...", "extensions": {...} }]
+                detail = str(first.get("message") or first.get("error") or detail)
+        raise GenerationError(502, f"{ERR_GENERATION_FAILED}: {detail}")
 
     # Extract generationId – try every known key name
     generation_id: str | None = (

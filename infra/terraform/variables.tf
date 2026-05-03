@@ -1,5 +1,12 @@
 ################################################################################
 # Project / environment
+#
+# Note: any change to a file under infra/terraform/** triggers the
+# `infra.yml` workflow on push to main. Touching this file forces a
+# Terraform apply, which re-renders /etc/promptcraft/.env with the
+# current TF_VAR_* secrets and replaces the EC2 instance via
+# user_data_replace_on_change. Use that to propagate a rotated secret
+# (e.g. LEONARDO_API_KEY) without code changes.
 ################################################################################
 
 variable "aws_region" {
