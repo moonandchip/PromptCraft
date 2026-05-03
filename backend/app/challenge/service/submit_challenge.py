@@ -56,9 +56,9 @@ def submit_challenge(session: Session, args: SubmitChallengeArgs) -> ChallengeSu
             generated_image_url=image_url,
         )
     except Exception as exc:
-        logger.error(
-            "CLIP scoring failed; returning score 0",
-            extra={"channel": CHANNEL, "feature": SUBMIT_CHALLENGE_FEATURE, "error": str(exc), "user": args.user_email},
+        logger.exception(
+            "CLIP scoring failed; returning score 0: %s", exc,
+            extra={"channel": CHANNEL, "feature": SUBMIT_CHALLENGE_FEATURE, "user": args.user_email},
         )
 
     try:
@@ -92,9 +92,9 @@ def submit_challenge(session: Session, args: SubmitChallengeArgs) -> ChallengeSu
         session.commit()
     except Exception as exc:
         session.rollback()
-        logger.error(
-            "Failed to save challenge submission",
-            extra={"channel": CHANNEL, "feature": SUBMIT_CHALLENGE_FEATURE, "error": str(exc), "user": args.user_email},
+        logger.exception(
+            "Failed to save challenge submission: %s", exc,
+            extra={"channel": CHANNEL, "feature": SUBMIT_CHALLENGE_FEATURE, "user": args.user_email},
         )
         raise SubmitChallengeException(
             ChallengeError.SAVE_FAILED, message="Failed to save submission",
@@ -113,9 +113,9 @@ def submit_challenge(session: Session, args: SubmitChallengeArgs) -> ChallengeSu
             similarity_score=similarity_score,
         )
     except Exception as exc:
-        logger.error(
-            "Prompt feedback failed; returning empty feedback",
-            extra={"channel": CHANNEL, "feature": SUBMIT_CHALLENGE_FEATURE, "error": str(exc), "user": args.user_email},
+        logger.exception(
+            "Prompt feedback failed; returning empty feedback: %s", exc,
+            extra={"channel": CHANNEL, "feature": SUBMIT_CHALLENGE_FEATURE, "user": args.user_email},
         )
 
     logger.info(

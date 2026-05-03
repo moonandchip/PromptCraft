@@ -35,8 +35,11 @@ def submit_endpoint(
     except AppException:
         raise
     except Exception as exc:
-        logger.error(
-            "Unexpected error in submit_challenge",
-            extra={"channel": CHANNEL, "feature": SUBMIT_CHALLENGE_FEATURE, "error": str(exc), "user": current_user.email},
+        # Use exception() so the traceback is captured by the default log
+        # format (the `extra` dict isn't printed by our handler).
+        logger.exception(
+            "Unexpected error in submit_challenge: %s",
+            exc,
+            extra={"channel": CHANNEL, "feature": SUBMIT_CHALLENGE_FEATURE, "user": current_user.email},
         )
         raise SubmitChallengeException(ChallengeError.UNKNOWN_ERROR) from exc

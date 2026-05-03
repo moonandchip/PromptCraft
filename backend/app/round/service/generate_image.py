@@ -63,8 +63,28 @@ def _make_request(method: str, url: str, api_key: str, body: dict | None = None)
         raise GenerationError(502, f"{ERR_GENERATION_API_ERROR}: {exc.reason}") from exc
 
 
-def _extract_image_url(response: dict) -> str | None:
+def _extract_image_url(response: dict | list | None) -> str | None:
     """Try every known v2 response shape to find a generated image URL."""
+    if response is None:
+        return None
+
+    # New v2 shape: top-level array of result objects (one per generated image).
+    if isinstance(response, list):
+        for item in response:
+            if isinstance(item, dict):
+                # Each item may carry the URL directly or nest it under "image".
+                url = item.get("url") or item.get("image_url")
+                if not url:
+                    image = item.get("image")
+                    if isinstance(image, dict):
+                        url = image.get("url")
+                if url:
+                    return url
+        return None
+
+    if not isinstance(response, dict):
+        return None
+
     # Shape 1: {"images": [{"url": "..."}]}
     images = response.get("images") or []
     if images and isinstance(images, list):
@@ -116,7 +136,10 @@ def generate_image(user_prompt: str) -> str:
     start_url = f"{LEONARDO_API_V2_BASE_URL}{LEONARDO_GENERATIONS_PATH}"
     log.info("Leonardo POST %s model=%s", start_url, GENERATION_MODEL_ID)
     start_response = _make_request("POST", start_url, api_key, body=generation_body)
-    log.info("Leonardo POST response keys: %s", list(start_response.keys()))
+    if isinstance(start_response, dict):
+        log.info("Leonardo POST response keys: %s", list(start_response.keys()))
+    else:
+        log.info("Leonardo POST response type=%s len=%s", type(start_response).__name__, len(start_response) if hasattr(start_response, "__len__") else "?")
     log.debug("Leonardo POST full response: %s", json.dumps(start_response))
 
     # Check if images arrived synchronously in the POST response
@@ -124,6 +147,13 @@ def generate_image(user_prompt: str) -> str:
     if immediate_url:
         log.info("Leonardo returned image synchronously: %s", immediate_url)
         return immediate_url
+
+    # If we got back a list with no image URL, the API contract changed in
+    # a way we don't understand. Surface as a 502 so the user gets a clean
+    # error and we have full payload in the logs to debug.
+    if not isinstance(start_response, dict):
+        log.error("Leonardo POST returned non-dict response: %s", json.dumps(start_response))
+        raise GenerationError(502, f"{ERR_GENERATION_FAILED}: unexpected response shape")
 
     # Extract generationId – try every known key name
     generation_id: str | None = (
@@ -149,12 +179,18 @@ def generate_image(user_prompt: str) -> str:
     for attempt in range(POLL_MAX_ATTEMPTS):
         time.sleep(POLL_INTERVAL_SECONDS)
         poll_response = _make_request("GET", poll_url, api_key)
-        log.debug("Poll attempt %d keys: %s", attempt + 1, list(poll_response.keys()))
+        if isinstance(poll_response, dict):
+            log.debug("Poll attempt %d keys: %s", attempt + 1, list(poll_response.keys()))
+        else:
+            log.debug("Poll attempt %d type=%s", attempt + 1, type(poll_response).__name__)
 
         # Also check for immediate images inside poll response
         immediate_url = _extract_image_url(poll_response)
         if immediate_url:
             return immediate_url
+
+        if not isinstance(poll_response, dict):
+            continue
 
         generation = poll_response.get("generations_by_pk") or {}
         status = generation.get("status", "")
