@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 
+from sqlalchemy import func
 from sqlalchemy.dialects.postgresql import insert as pg_insert
 from sqlalchemy.orm import Session
 
@@ -42,8 +43,8 @@ def upsert_user_profile(
     else:
         # COALESCE keeps a non-null existing display_name; falls back to the
         # safe default (email prefix) only when the existing row had none.
-        update_values["display_name"] = (
-            UserProfile.display_name.op("COALESCE")(safe_display_name)
+        update_values["display_name"] = func.coalesce(
+            UserProfile.display_name, safe_display_name,
         )
 
     stmt = stmt.on_conflict_do_update(
